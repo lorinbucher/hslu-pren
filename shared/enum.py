@@ -1,4 +1,4 @@
-"""Implements the shared cube classes"""
+"""Shared enumerations"""
 from enum import StrEnum
 
 

@@ -1,7 +1,7 @@
 # App libraries
 requests==2.31.0
 
-# Type checking
+# Linting
 mypy
 pylint
 types-requests
