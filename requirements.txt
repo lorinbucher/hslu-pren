@@ -1,0 +1,7 @@
+# App libraries
+requests==2.31.0
+
+# Type checking
+mypy
+pylint
+types-requests
