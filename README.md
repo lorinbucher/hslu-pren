@@ -4,6 +4,8 @@
 
 * [Installation](#installation)
 * [Deployment](#deployment)
+* [Development](#development)
+  * [Code Quality Check](#code-quality-check)
 
 ## Installation
 
@@ -21,4 +23,14 @@ python3 -m pip install -r requirements.txt
 ```shell
 source ~/.virtualenvs/hslu-pren/bin/activate
 python3 main.py
+```
+
+## Development
+
+### Code Quality Check
+
+```shell
+source ~/.virtualenvs/hslu-pren/bin/activate
+mypy .
+pylint '**/*.py' --recursive=yes
 ```
