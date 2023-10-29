@@ -4,7 +4,8 @@ import sys
 import tomllib
 
 import shared.config as app_config
-from shared.data import AppConfiguration
+from shared.data import AppConfiguration, CubeConfiguration
+from shared.enum import CubeColor
 from web.api import CubeApi
 
 
@@ -46,5 +47,11 @@ if __name__ == '__main__':
     _validate_config(config)
 
     cube_api = CubeApi(config)
-    cube_api.get_availability()
-    cube_api.post_cube_config({})
+    if cube_api.get_availability():
+        cube_config = CubeConfiguration()
+        cube_config.pos2 = CubeColor.BLUE
+        cube_config.pos4 = CubeColor.RED
+        cube_config.pos6 = CubeColor.YELLOW
+        cube_config.pos8 = CubeColor.NONE
+
+        cube_api.post_cube_config(cube_config)
