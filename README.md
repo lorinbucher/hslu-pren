@@ -3,6 +3,7 @@
 ## Table of Contents
 
 * [Installation](#installation)
+* [Configuration](#configuration)
 * [Deployment](#deployment)
 * [Development](#development)
   * [Code Quality Check](#code-quality-check)
@@ -16,6 +17,18 @@ python3 -m venv ~/.virtualenvs/hslu-pren
 source ~/.virtualenvs/hslu-pren/bin/activate
 # install dependencies
 python3 -m pip install -r requirements.txt
+```
+
+## Configuration
+
+```toml
+# config.toml
+[auth]
+team_nr = "03"
+token = "<auth_token>"
+
+[server]
+api_address = "<ip_address>:<port>"
 ```
 
 ## Deployment

@@ -3,14 +3,16 @@ import logging.config
 
 import requests
 
+from shared.data import AppConfiguration
+
 
 class CubeApi:
     """The cube API"""
 
-    def __init__(self, address: str, team_nr: str):
+    def __init__(self, app_config: AppConfiguration):
         self._logger = logging.getLogger('web.cube_api')
-        self._address = address
-        self._team_nr = team_nr
+        self._address = app_config.server_api_address
+        self._team_nr = app_config.auth_team_nr
 
     def get_availability(self) -> str:
         """Sends a GET request to the availability endpoint"""
