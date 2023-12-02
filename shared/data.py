@@ -22,14 +22,14 @@ class AppConfiguration:
 class CubeConfiguration:
     """The cube configuration"""
     # pylint: disable=too-many-instance-attributes
-    pos1: CubeColor = CubeColor.NONE
-    pos2: CubeColor = CubeColor.NONE
-    pos3: CubeColor = CubeColor.NONE
-    pos4: CubeColor = CubeColor.NONE
-    pos5: CubeColor = CubeColor.NONE
-    pos6: CubeColor = CubeColor.NONE
-    pos7: CubeColor = CubeColor.NONE
-    pos8: CubeColor = CubeColor.NONE
+    pos1: CubeColor = CubeColor.UNKNOWN
+    pos2: CubeColor = CubeColor.UNKNOWN
+    pos3: CubeColor = CubeColor.UNKNOWN
+    pos4: CubeColor = CubeColor.UNKNOWN
+    pos5: CubeColor = CubeColor.UNKNOWN
+    pos6: CubeColor = CubeColor.UNKNOWN
+    pos7: CubeColor = CubeColor.UNKNOWN
+    pos8: CubeColor = CubeColor.UNKNOWN
 
     def to_dict(self) -> dict[str, str]:
         """Returns a dictionary containing the cube configuration"""
