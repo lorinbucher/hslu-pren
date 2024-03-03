@@ -12,9 +12,9 @@
 
 ```shell
 # create virtual environment
-python3 -m venv ~/.virtualenvs/hslu-pren
+python3 -m venv venv
 # initialize virtual environment
-source ~/.virtualenvs/hslu-pren/bin/activate
+source venv/bin/activate
 # install dependencies
 python3 -m pip install -r requirements.txt
 ```
@@ -34,7 +34,7 @@ api_address = "<ip_address>:<port>"
 ## Deployment
 
 ```shell
-source ~/.virtualenvs/hslu-pren/bin/activate
+source venv/bin/activate
 python3 main.py
 ```
 
@@ -43,7 +43,7 @@ python3 main.py
 ### Code Quality Check
 
 ```shell
-source ~/.virtualenvs/hslu-pren/bin/activate
+source venv/bin/activate
 mypy .
-pylint '**/*.py' --recursive=yes
+pylint . --recursive=yes --verbose
 ```

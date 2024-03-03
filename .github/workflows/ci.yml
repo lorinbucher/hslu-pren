@@ -23,4 +23,4 @@ jobs:
           mypy .
       - name: Analysing the code with pylint
         run: |
-          pylint '**/*.py' --recursive=yes
+          pylint . --recursive=yes --verbose
