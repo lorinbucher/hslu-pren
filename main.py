@@ -17,9 +17,9 @@ def _parse_config() -> dict:
         with open('config.toml', 'rb') as config_file:
             return tomllib.load(config_file)
     except (FileNotFoundError, PermissionError) as error:
-        logger.error("failed to read config.toml file: %s", error)
+        logger.error('Failed to read config.toml file: %s', error)
     except tomllib.TOMLDecodeError as error:
-        logger.error("failed to parse config.toml file: %s", error)
+        logger.error('Failed to parse config.toml file: %s', error)
     sys.exit(1)
 
 
@@ -28,7 +28,7 @@ def _validate_config(conf: AppConfiguration) -> None:
     logger = logging.getLogger('main.config')
     is_valid, error = conf.validate()
     if not is_valid:
-        logger.error("invalid configuration: %s", error)
+        logger.error('Invalid configuration: %s', error)
         sys.exit(1)
 
 
