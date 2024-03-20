@@ -31,7 +31,7 @@ class CubeApi:
     def post_cube_config(self, cube_config: CubeConfiguration) -> bool:
         """Sends a POST request to the cubes endpoint"""
         json_data = self._create_post_payload(cube_config)
-        url = 'http://' + self._address + '/cubes/team' + self._team_nr
+        url = 'http://' + self._address + '/cubes/team' + self._team_nr + "/config"
         headers = {'Accept': 'application/json', 'Authorization': f'Bearer {self._auth_token}'}
         self._logger.info("send cube config request: POST %s %s", url, json_data)
         try:
