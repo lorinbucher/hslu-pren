@@ -1,6 +1,7 @@
 """Main Application"""
 import logging.config
 import sys
+import time
 import tomllib
 
 import shared.config as app_config
@@ -46,4 +47,9 @@ if __name__ == '__main__':
         cube_config.pos6 = CubeColor.YELLOW
         cube_config.pos8 = CubeColor.NONE
 
-        cube_api.post_cube_config(cube_config)
+        cube_api.post_start()
+        time.sleep(5)
+        cube_api.post_config(cube_config)
+        time.sleep(2)
+        cube_api.post_end()
+        cube_api.get_config()
