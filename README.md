@@ -29,6 +29,12 @@ token = "<auth_token>"
 
 [server]
 api_address = "<ip_address>:<port>"
+rtsp_address = "<ip_address>"
+
+[rtsp]
+user = "pren"
+password = "<password>"
+profile = "<pren_profile_small|pren_profile_med>" 
 ```
 
 ## Deployment

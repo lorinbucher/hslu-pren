@@ -25,17 +25,9 @@ def _parse_config() -> dict:
 def _validate_config(conf: AppConfiguration) -> None:
     """Validates the configuration"""
     logger = logging.getLogger('main.config')
-    valid = True
-    if not conf.auth_team_nr or not isinstance(conf.auth_team_nr, str):
-        logger.error("invalid configuration: auth.team_nr must be a non-empty string")
-        valid = False
-    if not conf.auth_token or not isinstance(conf.auth_token, str):
-        logger.error("invalid configuration: auth.auth_token must be a non-empty string")
-        valid = False
-    if not conf.server_api_address or not isinstance(conf.server_api_address, str):
-        logger.error("invalid configuration: server.api_address must be a non-empty string")
-        valid = False
-    if not valid:
+    is_valid, error = conf.validate()
+    if not is_valid:
+        logger.error("invalid configuration: %s", error)
         sys.exit(1)
 
 
