@@ -85,6 +85,6 @@ class CubeApi:
     def _create_cube_config_payload(cube_config: CubeConfiguration) -> dict:
         """Creates the JSON payload for the post request of the cube configuration"""
         return {
-            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "config": cube_config.to_dict()
+            'time': datetime.utcnow().isoformat(),
+            'config': cube_config.to_dict()
         }
