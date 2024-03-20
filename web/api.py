@@ -57,7 +57,7 @@ class CubeApi:
         self._logger.info('GET request: %s', url)
         try:
             response = requests.get(url=url, headers=headers, timeout=5)
-            self._logger.info('GET response: status=%s, text=%s', response.status_code, response.text)
+            self._logger.info('GET response: status=%s, data=%s', response.status_code, self._parse_data(response))
             return response
         except requests.exceptions.RequestException as error:
             self._logger.error('Request failed: url=%s, error=%s', url, error)
@@ -69,8 +69,16 @@ class CubeApi:
         self._logger.info('POST request: %s data=%s', url, data)
         try:
             response = requests.post(url=url, headers=headers, json=data, timeout=5)
-            self._logger.info('POST response: status=%s, text=%s', response.status_code, response.text)
+            self._logger.info('POST response: status=%s, data=%s', response.status_code, self._parse_data(response))
             return response
         except requests.exceptions.RequestException as error:
             self._logger.error('Request failed: url=%s, error=%s', url, error)
             return None
+
+    @staticmethod
+    def _parse_data(response: requests.Response) -> str | dict[str, Any]:
+        """Parses the data of the response"""
+        try:
+            return response.json()
+        except requests.exceptions.JSONDecodeError:
+            return response.text
