@@ -1,9 +1,12 @@
+import time
+
 import serial
 import ctypes
 from time import sleep
 from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message
 
-#Die folgenden 3 Methoden geben beispiel befehle an die dann auch in uart gewschrieben werden
+
+# Die folgenden 3 Methoden geben beispiel befehle an die dann auch in uart gewschrieben werden
 def place(red, yellow, blue):
     union = DataUnion()
     cmd = Message()
@@ -14,9 +17,10 @@ def place(red, yellow, blue):
     place.cubes_blue = blue
     union.cmdPlaceCubes = place
     cmd.cmd = COMMAND.CMD_PLACE_CUBES.value
-    cmd.len = ctypes.sizeof(CmdPlaceCubes)
+    # cmd.len = ctypes.sizeof(CmdPlaceCubes)
     cmd.dataUnion = union
     return cmd
+
 
 def rotate(degrees):
     union = DataUnion()
@@ -27,9 +31,10 @@ def rotate(degrees):
     rotate.degrees_l = degrees
     union.cmdRotateGrid = rotate
     cmd.cmd = COMMAND.CMD_ROTATE_GRID.value
-    cmd.len = ctypes.sizeof(CmdRotateGrid)
+    # cmd.len = ctypes.sizeof(CmdRotateGrid)
     cmd.dataUnion = union
     return cmd
+
 
 def moveLiftDown():
     union = DataUnion()
@@ -37,31 +42,65 @@ def moveLiftDown():
     cmd.checksum = 12
     union.cmdMoveLift = CmdMoveLift.MOVE_DOWN.value
     cmd.cmd = COMMAND.CMD_MOVE_LIFT.value
-    cmd.len = ctypes.sizeof(CmdRotateGrid)
+    # cmd.len = ctypes.sizeof(CmdRotateGrid)
     cmd.dataUnion = union
     return cmd
 
-#Mit den folgenden zwei funktionen hatte ich mühe ich habe die methoden nach dieser webseite programmiert:
-#https://www.electronicwings.com/raspberry-pi/raspberry-pi-uart-communication-using-python-and-c
+
+def moveLiftUp():
+    union = DataUnion()
+    cmd = Message()
+    cmd.checksum = 12
+    union.cmdMoveLift = CmdMoveLift.MOVE_UP.value
+    cmd.cmd = COMMAND.CMD_MOVE_LIFT.value
+    # cmd.len = ctypes.sizeof(CmdRotateGrid)
+    cmd.dataUnion = union
+    return cmd
+
+
+def getState():
+    union = DataUnion()
+    cmd = Message()
+    cmd.checksum = 12
+    # union.cmdMoveLift = CmdMoveLift.MOVE_DOWN.value
+    cmd.cmd = COMMAND.CMD_STATE.value
+    # cmd.len = ctypes.sizeof(CmdRotateGrid)
+    cmd.dataUnion = union
+    return cmd
+
+
+# Mit den folgenden zwei funktionen hatte ich mühe ich habe die methoden nach dieser webseite programmiert:
+# https://www.electronicwings.com/raspberry-pi/raspberry-pi-uart-communication-using-python-and-c
 def writeToUart():
-    ser = serial.Serial ("/dev/ttyAMA10", 9600)
-    cmd = moveLiftDown()
-    cmd_bytes = bytes(cmd)
+    ser = serial.Serial("/dev/ttyAMA0", 115200)
+
+    # cmd = moveLiftDown()
+    # cmd_bytes = bytes("AAAB".encode("ascii") + cmd)
+    # ser.write(cmd_bytes)
+    #
+    # cmd = moveLiftUp()
+    # cmd_bytes = bytes("AAAB".encode("ascii") + cmd)
+    # ser.write(cmd_bytes)
+
+    cmd = getState()
+    cmd_bytes = bytes("AAAB".encode("ascii") + cmd)  # TODO: probably better way to add preamble
     ser.write(cmd_bytes)
+
     ser.close()
 
+
 def readFromUart():
-    ser = serial.Serial ("/dev/ttyAMA10", 9600)
+    ser = serial.Serial("/dev/ttyAMA0", 115200)
     while True:
         received_data = ser.read()
         sleep(0.03)
         data_left = ser.inWaiting()
         received_data += ser.read(data_left)
-        print (received_data)
-        ser.write(received_data)
-        ser.close()
+        print(received_data)
+        # ser.write(received_data)
+        # ser.close()
 
 
-#writeToUart()
-
-#readFromUart()
+if __name__ == '__main__':
+    writeToUart()
+    readFromUart()
