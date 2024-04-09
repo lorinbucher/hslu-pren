@@ -1,12 +1,12 @@
-"""Shared data classes"""
+"""Shared data classes that are used in different parts of the application."""
 from dataclasses import dataclass, fields
 
-from shared.enum import CubeColor
+from shared.enumerations import CubeColor
 
 
 @dataclass
 class AppConfiguration:
-    """The application configuration"""
+    """The configuration for the application."""
     auth_team_nr: str = ''
     auth_token: str = ''
 
@@ -18,7 +18,7 @@ class AppConfiguration:
     rtsp_profile: str = ''
 
     def from_dict(self, data: dict) -> None:
-        """Reads the app configuration from a dictionary"""
+        """Reads the app configuration from a dictionary."""
         self.auth_team_nr = data.get('auth', {}).get('team_nr', '')
         self.auth_token = data.get('auth', {}).get('token', '')
 
@@ -30,7 +30,7 @@ class AppConfiguration:
         self.rtsp_profile = data.get('rtsp', {}).get('profile', '')
 
     def validate(self) -> tuple[bool, str]:
-        """Validates the configuration of the application"""
+        """Validates the configuration of the application."""
         for key, value in self.__dict__.items():
             if not isinstance(value, str) or not value.strip():
                 return False, key.replace('_', '.', 1)
@@ -39,7 +39,13 @@ class AppConfiguration:
 
 @dataclass
 class CubeConfiguration:
-    """The cube configuration"""
+    """The positions of a cube or an empty space in the configuration.
+
+    Values 1-8 denote the positions of a cube or an empty space in the configuration.
+    Position 1 specifies the point that lies on the reference sector of the turntable,
+    positions 2-4 specify sectors on the turntable in the counterclockwise direction.
+    The Positions 5-8 are those on the 2nd level, on top of the underlying cube.
+    """
     # pylint: disable=too-many-instance-attributes
     pos1: CubeColor = CubeColor.UNKNOWN
     pos2: CubeColor = CubeColor.UNKNOWN
@@ -51,7 +57,7 @@ class CubeConfiguration:
     pos8: CubeColor = CubeColor.UNKNOWN
 
     def to_dict(self) -> dict[str, str]:
-        """Returns a dictionary containing the cube configuration"""
+        """Returns a dictionary containing the cube configuration."""
         data = {}
         for field in fields(self):
             data[field.name.removeprefix('pos')] = str(getattr(self, field.name))

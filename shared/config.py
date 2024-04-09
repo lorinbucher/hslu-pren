@@ -1,4 +1,4 @@
-"""Implements the shared configuration"""
+"""The shared logging configuration that should be used in all parts of the application."""
 import sys
 
 logging_config = {
@@ -6,7 +6,7 @@ logging_config = {
     'disable_existing_loggers': True,
     'formatters': {
         'simple': {
-            'format': '%(asctime)s.%(msecs)03d %(levelname)-8s %(name)-15s %(message)s',
+            'format': '%(asctime)s.%(msecs)03d %(levelname)-8s %(name)-25s %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
     },

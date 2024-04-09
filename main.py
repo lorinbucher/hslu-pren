@@ -1,4 +1,4 @@
-"""Main Application"""
+"""The main application."""
 import logging.config
 import sys
 import time
@@ -6,12 +6,12 @@ import tomllib
 
 import shared.config as app_config
 from shared.data import AppConfiguration, CubeConfiguration
-from shared.enum import CubeColor
+from shared.enumerations import CubeColor
 from web.api import CubeApi
 
 
 def _parse_config() -> dict:
-    """Parses the configuration file"""
+    """Parses the configuration file."""
     logger = logging.getLogger('main.config')
     try:
         with open('config.toml', 'rb') as config_file:
@@ -24,7 +24,7 @@ def _parse_config() -> dict:
 
 
 def _validate_config(conf: AppConfiguration) -> None:
-    """Validates the configuration"""
+    """Validates the configuration of the application."""
     logger = logging.getLogger('main.config')
     is_valid, error = conf.validate()
     if not is_valid:
