@@ -1,6 +1,6 @@
 import serial
 from time import sleep
-from uart.command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message
+from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message
 
 
 # Die folgenden 3 Methoden geben beispiel befehle an die dann auch in uart gewschrieben werden
@@ -58,17 +58,21 @@ def getState():
     cmd.dataUnion = union
     writeToUart(cmd)
 
+def encoder(command: bytes) -> bytes:
+    preamble = b'AAAB'
+    return preamble + command
 
 
 # Mit den folgenden zwei funktionen hatte ich mühe ich habe die methoden nach dieser webseite programmiert:
 # https://www.electronicwings.com/raspberry-pi/raspberry-pi-uart-communication-using-python-and-c
 def writeToUart(cmd):
-    ser = serial.Serial("/dev/ttyAMA0", 115200)
+    #ser = serial.Serial("/dev/ttyAMA0", 115200)
 
-    cmd_bytes = bytes("AAAB".encode("ascii") + cmd)  # TODO: probably better way to add preamble
-    print(cmd_bytes)
-    ser.write(cmd_bytes)
-    ser.close()
+    print(encoder(cmd))
+
+
+    #ser.write(encoder(cmd))
+    #ser.close()
 
 
 def readFromUart():
@@ -83,4 +87,4 @@ def readFromUart():
 
 if __name__ == '__main__':
     moveLiftDown()
-    readFromUart()
+    #readFromUart()
