@@ -20,35 +20,35 @@ class CubeApi:
     def get_availability(self) -> bool:
         """Sends a GET request to the availability endpoint."""
         self._logger.info('Sending availability request')
-        response = self._get_request(f'http://{self._address}/cubes')
+        response = self._get_request(f'https://{self._address}/cubes')
         return 200 <= response.status_code <= 299 if response else False
 
     def get_config(self) -> bool:
         """Sends a GET request to receive the recognized cube configuration."""
         self._logger.info('Sending cube config request')
-        response = self._get_request(f'http://{self._address}/cubes/team{self._team_nr}')
+        response = self._get_request(f'https://{self._address}/cubes/team{self._team_nr}')
         return 200 <= response.status_code <= 299 if response else False
 
     def post_start(self) -> bool:
         """Sends a POST request to start a new run."""
         self._logger.info('Sending start request')
-        response = self._post_request(f'http://{self._address}/cubes/team{self._team_nr}/start')
+        response = self._post_request(f'https://{self._address}/cubes/team{self._team_nr}/start')
         return 200 <= response.status_code <= 299 if response else False
 
     def post_config(self, cube_config: CubeConfiguration) -> bool:
         """Sends a POST request with the recognized cube configuration."""
-        self._logger.info('Sending start request')
+        self._logger.info('Sending config request')
         data = {
             'time': datetime.utcnow().isoformat(),
             'config': cube_config.to_dict()
         }
-        response = self._post_request(f'http://{self._address}/cubes/team{self._team_nr}/config', data=data)
+        response = self._post_request(f'https://{self._address}/cubes/team{self._team_nr}/config', data=data)
         return 200 <= response.status_code <= 299 if response else False
 
     def post_end(self) -> bool:
         """Sends a POST request to end the current run."""
         self._logger.info('Sending end request')
-        response = self._post_request(f'http://{self._address}/cubes/team{self._team_nr}/end')
+        response = self._post_request(f'https://{self._address}/cubes/team{self._team_nr}/end')
         return 200 <= response.status_code <= 299 if response else False
 
     def _get_request(self, url: str) -> requests.Response | None:
