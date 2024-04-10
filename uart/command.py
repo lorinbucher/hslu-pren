@@ -38,6 +38,5 @@ class DataUnion(Union):
 
 class Message(Structure):
     _fields_ = [("cmd", c_uint8),
-                # ("len", c_uint8),
                 ("dataUnion", DataUnion),
                 ("checksum", c_uint8)]
