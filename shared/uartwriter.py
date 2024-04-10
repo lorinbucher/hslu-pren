@@ -1,7 +1,4 @@
-import time
-
 import serial
-import ctypes
 from time import sleep
 from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message
 
@@ -17,34 +14,21 @@ def place(red, yellow, blue):
     place.cubes_blue = blue
     union.cmdPlaceCubes = place
     cmd.cmd = COMMAND.CMD_PLACE_CUBES.value
-    # cmd.len = ctypes.sizeof(CmdPlaceCubes)
     cmd.dataUnion = union
-    return cmd
+    writeToUart(cmd)
 
 
-def rotate(degrees):
+def rotate(degrees_h, degrees_l):
     union = DataUnion()
     cmd = Message()
     cmd.checksum = 12
     rotate = CmdRotateGrid()
-    rotate.degrees_h = degrees
-    rotate.degrees_l = degrees
+    rotate.degrees_h = degrees_h
+    rotate.degrees_l = degrees_l
     union.cmdRotateGrid = rotate
     cmd.cmd = COMMAND.CMD_ROTATE_GRID.value
-    # cmd.len = ctypes.sizeof(CmdRotateGrid)
     cmd.dataUnion = union
-    return cmd
-
-
-def moveLiftDown():
-    union = DataUnion()
-    cmd = Message()
-    cmd.checksum = 12
-    union.cmdMoveLift = CmdMoveLift.MOVE_DOWN.value
-    cmd.cmd = COMMAND.CMD_MOVE_LIFT.value
-    # cmd.len = ctypes.sizeof(CmdRotateGrid)
-    cmd.dataUnion = union
-    return cmd
+    writeToUart(cmd)
 
 
 def moveLiftUp():
@@ -53,40 +37,37 @@ def moveLiftUp():
     cmd.checksum = 12
     union.cmdMoveLift = CmdMoveLift.MOVE_UP.value
     cmd.cmd = COMMAND.CMD_MOVE_LIFT.value
-    # cmd.len = ctypes.sizeof(CmdRotateGrid)
     cmd.dataUnion = union
-    return cmd
+    writeToUart(cmd)
+
+def moveLiftDown():
+    union = DataUnion()
+    cmd = Message()
+    cmd.checksum = 12
+    union.cmdMoveLift = CmdMoveLift.MOVE_UP.value
+    cmd.cmd = COMMAND.CMD_MOVE_LIFT.value
+    cmd.dataUnion = union
+    writeToUart(cmd)
 
 
 def getState():
     union = DataUnion()
     cmd = Message()
     cmd.checksum = 12
-    # union.cmdMoveLift = CmdMoveLift.MOVE_DOWN.value
     cmd.cmd = COMMAND.CMD_STATE.value
-    # cmd.len = ctypes.sizeof(CmdRotateGrid)
     cmd.dataUnion = union
-    return cmd
+    writeToUart(cmd)
 
 
 # Mit den folgenden zwei funktionen hatte ich mühe ich habe die methoden nach dieser webseite programmiert:
 # https://www.electronicwings.com/raspberry-pi/raspberry-pi-uart-communication-using-python-and-c
-def writeToUart():
-    ser = serial.Serial("/dev/ttyAMA0", 115200)
+def writeToUart(cmd):
+    #ser = serial.Serial("/dev/ttyAMA0", 115200)
 
-    # cmd = moveLiftDown()
-    # cmd_bytes = bytes("AAAB".encode("ascii") + cmd)
-    # ser.write(cmd_bytes)
-    #
-    # cmd = moveLiftUp()
-    # cmd_bytes = bytes("AAAB".encode("ascii") + cmd)
-    # ser.write(cmd_bytes)
-
-    cmd = getState()
     cmd_bytes = bytes("AAAB".encode("ascii") + cmd)  # TODO: probably better way to add preamble
-    ser.write(cmd_bytes)
-
-    ser.close()
+    print(cmd_bytes)
+    #ser.write(cmd_bytes)
+    #ser.close()
 
 
 def readFromUart():
@@ -102,5 +83,5 @@ def readFromUart():
 
 
 if __name__ == '__main__':
-    writeToUart()
-    readFromUart()
+    moveLiftDown()
+    #readFromUart()
