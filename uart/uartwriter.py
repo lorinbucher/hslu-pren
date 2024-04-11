@@ -2,8 +2,7 @@ import serial
 from time import sleep
 from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message
 
-class UartCommunicator:
-    # Die folgenden 3 Methoden geben beispiel befehle an die dann auch in uart gewschrieben werden
+class uartwriter:
     def place(self, red, yellow, blue):
         union = DataUnion()
         cmd = Message()
@@ -31,20 +30,11 @@ class UartCommunicator:
         self.writeToUart(cmd)
 
 
-    def moveLiftUp(self):
+    def moveLift(self, state):
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
-        union.cmdMoveLift = CmdMoveLift.MOVE_UP.value
-        cmd.cmd = COMMAND.CMD_MOVE_LIFT.value
-        cmd.dataUnion = union
-        self.writeToUart(cmd)
-
-    def moveLiftDown(self):
-        union = DataUnion()
-        cmd = Message()
-        cmd.checksum = 12
-        union.cmdMoveLift = CmdMoveLift.MOVE_UP.value
+        union.cmdMoveLift = state.value
         cmd.cmd = COMMAND.CMD_MOVE_LIFT.value
         cmd.dataUnion = union
         self.writeToUart(cmd)
@@ -75,16 +65,7 @@ class UartCommunicator:
         ser.close()
 
 
-    def readFromUart(self):
-        ser = serial.Serial("/dev/ttyAMA0", 115200)
-        while True:
-            received_data = ser.read()
-            sleep(0.03)
-            data_left = ser.inWaiting()
-            received_data += ser.read(data_left)
-            print(received_data)
-
 
     if __name__ == '__main__':
-        moveLiftDown()
-        readFromUart()
+        moveLift(CmdMoveLift.MOVE_UP)
+

@@ -9,13 +9,13 @@
 - [x] add remaining commands
 - [ ] use same protocol to read data
 - [x] move to separate package, e.g. uart, shared is only for shared classes used by differents parts of the SW
-- [x] parameterize functions to pass data. e.g. lift up / lift down
-- [ ] read and write should run in separate task
-- [ ] add id field -> waiting on protocol definition
+- [ ] parameterize functions to pass data. e.g. lift up / lift down
+- [ ] read and write should run in separate task (blockierend, erst wieder schreiben, wenn acklowleged)
+- [ ] add id field -> waiting on protocol definition (schauen bei andre in github)
 - [ ] implement checksum -> waiting on definition
 - [ ] check for ACK, NACK, checksum error and resend in that case (with same message id)
-- [ ] await ACK, NACK or timeout before sending other command
-- [ ] support receiving GET_STATE response (SEND_STATE)
+- [ ] await ACK, NACK or timeout before sending other command (von aussen)
+- [ ] support receiving GET_STATE response (SEND_STATE) 
 
 ## Local Setup
 
