@@ -3,6 +3,13 @@ from time import sleep
 from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message
 
 class uartwriter:
+    def __init__(self) -> None:
+        self.ser = serial.Serial("/dev/ttys048", 115200)
+    
+    def close_Connection(self):
+        self.ser.close()
+
+
     def place(self, red, yellow, blue):
         union = DataUnion()
         cmd = Message()
@@ -56,16 +63,13 @@ class uartwriter:
     # Mit den folgenden zwei funktionen hatte ich mühe ich habe die methoden nach dieser webseite programmiert:
     # https://www.electronicwings.com/raspberry-pi/raspberry-pi-uart-communication-using-python-and-c
     def writeToUart(self, cmd):
-        ser = serial.Serial("/dev/ttyAMA0", 115200)
-
+        ser = serial.Serial("/dev/ttys048", 115200)
         print(self.encoder(cmd))
-
-
         ser.write(self.encoder(cmd))
-        ser.close()
 
 
 
-    if __name__ == '__main__':
-        moveLift(CmdMoveLift.MOVE_UP)
+if __name__ == '__main__':
+    writer = uartwriter()
+    writer.moveLift(CmdMoveLift.MOVE_DOWN)
 

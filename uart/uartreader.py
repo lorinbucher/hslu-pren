@@ -5,7 +5,7 @@ from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnio
 class uartreader:
 
     def readFromUart(self):
-        ser = serial.Serial("/dev/ttyAMA0", 115200)
+        ser = serial.Serial("/dev/ttys047", 115200)
         while True:
             received_data = ser.read()
             sleep(0.03)
@@ -16,5 +16,7 @@ class uartreader:
     def decoder(self):
         pass
 
-    if __name__ == '__main__':
-        readFromUart()
+if __name__ == '__main__':
+    reader = uartreader()
+    reader.readFromUart()
+
