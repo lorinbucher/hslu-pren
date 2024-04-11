@@ -66,13 +66,13 @@ class UartCommunicator:
     # Mit den folgenden zwei funktionen hatte ich mühe ich habe die methoden nach dieser webseite programmiert:
     # https://www.electronicwings.com/raspberry-pi/raspberry-pi-uart-communication-using-python-and-c
     def writeToUart(self, cmd):
-        #ser = serial.Serial("/dev/ttyAMA0", 115200)
+        ser = serial.Serial("/dev/ttyAMA0", 115200)
 
         print(self.encoder(cmd))
 
 
-        #ser.write(encoder(cmd))
-        #ser.close()
+        ser.write(self.encoder(cmd))
+        ser.close()
 
 
     def readFromUart(self):
@@ -87,4 +87,4 @@ class UartCommunicator:
 
     if __name__ == '__main__':
         moveLiftDown()
-        #readFromUart()
+        readFromUart()
