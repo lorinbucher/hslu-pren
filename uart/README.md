@@ -10,7 +10,7 @@
 - [x] use same protocol to read data
 - [x] move to separate package, e.g. uart, shared is only for shared classes used by differents parts of the SW
 - [x] parameterize functions to pass data. e.g. lift up / lift down
-- [ ] read and write should run in separate task (blockierend, erst wieder schreiben, wenn acklowleged)
+- [x] read and write should run in separate task (blockierend, erst wieder schreiben, wenn acklowleged)
 - [ ] add id field -> waiting on protocol definition (schauen bei andre in github)
 - [ ] implement checksum -> waiting on definition
 - [ ] check for ACK, NACK, checksum error and resend in that case (with same message id)

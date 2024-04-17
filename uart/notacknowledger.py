@@ -7,5 +7,5 @@ import time
 
 if __name__ == "__main__":
     writer = uartwriter("/dev/ttys073")
-    command = commandbuilder().otherCommands(COMMAND.CMD_ACKNOWLEDGE)
+    command = commandbuilder().otherCommands(COMMAND.CMD_NOT_ACKNOWLEDGE)
     writer.writeToUart(command)
