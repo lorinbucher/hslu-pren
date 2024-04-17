@@ -2,6 +2,7 @@ import threading
 from uartreader import uartreader
 from uartwriter import uartwriter
 from command import COMMAND, Message, CmdMoveLift
+from commandbuilder import commandbuilder
 import time
 
 class acknowledger:
@@ -10,4 +11,5 @@ class acknowledger:
 
 if __name__ == "__main__":
     ack = acknowledger("/dev/ttys073")
-    ack.writer.otherCommands(COMMAND.CMD_ACKNOWLEDGE)
+    command = commandbuilder().otherCommands(COMMAND.CMD_ACKNOWLEDGE)
+    ack.writer.writeToUart(command)

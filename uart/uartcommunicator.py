@@ -2,6 +2,7 @@ import threading
 from uartreader import uartreader
 from uartwriter import uartwriter
 from command import COMMAND, Message, CmdMoveLift
+from commandbuilder import commandbuilder
 import time
 
 class uartcommunicator:
@@ -18,7 +19,7 @@ class uartcommunicator:
             self.acklowedged = False
         print(command)
 
-    def write_uart(self):
+    def write_uart(self, cmd):
         thread_reader = threading.Thread(target=self.read_uart)
         thread_reader.start()
         thread_reader.join()
@@ -26,10 +27,11 @@ class uartcommunicator:
         thread_reader2 = threading.Thread(target=self.read_uart)
         thread_reader2.start()
         if self.acklowedged:
-            self.writer.moveLift(CmdMoveLift.MOVE_UP)
+            self.writer.writeToUart(cmd)
         thread_reader2.join()
 
 if __name__ == "__main__":
     communicator = uartcommunicator()
-    communicator.write_uart()
+    command = commandbuilder().moveLift(CmdMoveLift.MOVE_UP)
+    communicator.write_uart(command)
     
