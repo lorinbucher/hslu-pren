@@ -5,31 +5,36 @@ from time import sleep
 from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message
 
 class uartreader:
+    def __init__(self, path) -> None:
+        self.path = path
+        
 
     def readFromUart(self):
-        ser = serial.Serial("/dev/ttys073", 115200)
-        while True:
-            received_data = ser.read()
-            sleep(0.03)
-            data_left = ser.inWaiting()
-            received_data += ser.read(data_left)
-            print(self.decoder(received_data))
+        ser = serial.Serial(self.path, 115200)
+        received_data = ser.read()
+        sleep(0.03)
+        data_left = ser.inWaiting()
+        received_data += ser.read(data_left)
+        #print(self.decoder(received_data))
+        ser.close()
+        return self.decoder(received_data)
+        
 
     def decoder(self, received_data):
         if len(received_data) < 4 + sizeof(Message):
-            print("Incomplete data received")
+            #print("Incomplete data received")
             return None
 
         preamble = received_data[:4]
         if preamble != b'AAAB':
-            print("Invalid preamble")
+            #print("Invalid preamble")
             return None
 
         message_data = received_data[4:]
         message = Message.from_buffer_copy(message_data)
         command_type = COMMAND(message.cmd)
 
-        print(f"Command: {command_type.name}")
+        #print(f"Command: {command_type.name}")
 
         # Access the union data safely
         if command_type == COMMAND.CMD_ACKNOWLEDGE:
@@ -63,8 +68,7 @@ class uartreader:
         return command_type, message
 
 
-
 if __name__ == '__main__':
-    reader = uartreader()
+    reader = uartreader("/dev/ttys072")
     reader.readFromUart()
 

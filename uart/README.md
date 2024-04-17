@@ -7,9 +7,9 @@
 - [x] add AAAB preamble
 - [x] write function should accept cmd and data to send and add the preamble
 - [x] add remaining commands
-- [ ] use same protocol to read data
+- [x] use same protocol to read data
 - [x] move to separate package, e.g. uart, shared is only for shared classes used by differents parts of the SW
-- [ ] parameterize functions to pass data. e.g. lift up / lift down
+- [x] parameterize functions to pass data. e.g. lift up / lift down
 - [ ] read and write should run in separate task (blockierend, erst wieder schreiben, wenn acklowleged)
 - [ ] add id field -> waiting on protocol definition (schauen bei andre in github)
 - [ ] implement checksum -> waiting on definition
