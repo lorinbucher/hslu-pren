@@ -9,7 +9,6 @@ class uartcommunicator:
         self.reader = uartreader(read_path)
         self.writer = uartwriter(write_path)
         self.acklowedged = False
-        self.thread_reader = threading.Thread(target=self.read_uart)
     
     def read_uart(self):
         command, message = self.reader.readFromUart()
@@ -17,12 +16,18 @@ class uartcommunicator:
             self.acklowedged = True
         else:
             self.acklowedged = False
+        print(command)
 
     def write_uart(self):
-        self.thread_reader.start()
-        self.thread_reader.join()
+        thread_reader = threading.Thread(target=self.read_uart)
+        thread_reader.start()
+        thread_reader.join()
+
+        thread_reader2 = threading.Thread(target=self.read_uart)
+        thread_reader2.start()
         if self.acklowedged:
             self.writer.moveLift(CmdMoveLift.MOVE_UP)
+        thread_reader2.join()
 
 if __name__ == "__main__":
     communicator = uartcommunicator()
