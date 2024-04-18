@@ -13,6 +13,7 @@ class uartcommunicator:
     
     def read_uart(self):
         command, message = self.reader.readFromUart()
+        #Not acknowledge = nicht nochmal senden, crc error nochmal senden
         if command.value == 1:
             self.acklowedged = True
         else:
@@ -29,6 +30,7 @@ class uartcommunicator:
             thread_reader = threading.Thread(target=self.read_uart)
             thread_reader.start()
             self.writer.writeToUart(cmd)
+            #timeout einbauen und nochmal senden
             thread_reader.join()
             if self.acklowedged: break
 
@@ -36,5 +38,8 @@ if __name__ == "__main__":
     communicator = uartcommunicator()
     communicator.wait_for_first_acklowedged()
     command = commandbuilder().moveLift(CmdMoveLift.MOVE_UP)
+    #command = commandbuilder().placeCubes(1, 3, 1)
+    #command = commandbuilder().rotateGrid(2, 5)
+    #command = commandbuilder().sendState(1, 4, 2, 1)
     communicator.write_uart(command)
     

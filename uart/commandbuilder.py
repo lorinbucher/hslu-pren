@@ -3,8 +3,11 @@ from time import sleep
 from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message, CmdSendState
 
 class commandbuilder:
+    id = 0
+
     def idGenerator(self):
-        return 44
+        commandbuilder.id = (commandbuilder.id + 1) % 256
+        return commandbuilder.id
     
 
     def rotateGrid(self, degrees_h, degrees_l):
@@ -67,3 +70,6 @@ class commandbuilder:
         cmd.cmd = command.value
         cmd.dataUnion = union
         return cmd
+    
+if __name__ == "__main__":
+    command = commandbuilder().otherCommands(COMMAND.CMD_ACKNOWLEDGE)
