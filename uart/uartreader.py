@@ -1,23 +1,38 @@
 from ctypes import POINTER, c_uint8, sizeof
+import threading
 from typing import cast
 import serial
 from time import sleep
 from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message
+from queue import Queue
+
 
 class uartreader:
     def __init__(self, path) -> None:
         self.path = path
+        self.commands = Queue()
+        thread_reader = threading.Thread(target=self.readFromUart)
+        thread_reader.start()
+
+    def empty_queue(self):
+        while (not self.commands.empty()):
+            self.commands.get()
+
+    def is_empty(self):
+        return self.commands.empty()
+
+    def get_from_queue(self):
+        return self.commands.get()
         
 
     def readFromUart(self):
         ser = serial.Serial(self.path, 115200)
-        received_data = ser.read()
-        sleep(0.03)
-        data_left = ser.inWaiting()
-        received_data += ser.read(data_left)
-        #print(self.decoder(received_data))
-        ser.close()
-        return self.decoder(received_data)
+        while True:
+            received_data = ser.read()
+            sleep(0.03)
+            data_left = ser.inWaiting()
+            received_data += ser.read(data_left)
+            self.commands.put(self.decoder(received_data))
         
 
     def decoder(self, received_data):
@@ -65,7 +80,7 @@ class uartreader:
         else:
             print("Unknown Command")
 
-        return command_type, message
+        return message
 
 
 if __name__ == '__main__':

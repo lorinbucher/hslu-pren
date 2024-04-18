@@ -5,7 +5,8 @@ from command import COMMAND, Message, CmdMoveLift
 from commandbuilder import commandbuilder
 import time
 
+
 if __name__ == "__main__":
-    writer = uartwriter("/dev/ttys027")
-    command = commandbuilder().otherCommands(COMMAND.CMD_ACKNOWLEDGE)
+    writer = uartwriter("/dev/ttys012")
+    command = commandbuilder().otherCommands(COMMAND.CMD_NOT_ACKNOWLEDGE)
     writer.writeToUart(command)
