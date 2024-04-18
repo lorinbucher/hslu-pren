@@ -6,6 +6,6 @@ from commandbuilder import commandbuilder
 import time
 
 if __name__ == "__main__":
-    writer = uartwriter("/dev/ttys073")
+    writer = uartwriter("/dev/ttys012")
     command = commandbuilder().otherCommands(COMMAND.CMD_ACKNOWLEDGE)
     writer.writeToUart(command)

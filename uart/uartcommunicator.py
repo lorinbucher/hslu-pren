@@ -6,7 +6,7 @@ from commandbuilder import commandbuilder
 import time
 
 class uartcommunicator:
-    def __init__(self, read_path="/dev/ttys072", write_path="/dev/ttys072"):
+    def __init__(self, read_path="/dev/ttys011", write_path="/dev/ttys011"):
         self.reader = uartreader(read_path)
         self.writer = uartwriter(write_path)
         self.acklowedged = False

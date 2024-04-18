@@ -3,10 +3,15 @@ from time import sleep
 from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message, CmdSendState
 
 class commandbuilder:
+    def idGenerator(self):
+        return 44
+    
+
     def rotateGrid(self, degrees_h, degrees_l):
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
+        cmd.id = self.idGenerator()
         rotate = CmdRotateGrid()
         rotate.degrees_h = degrees_h
         rotate.degrees_l = degrees_l
@@ -19,6 +24,7 @@ class commandbuilder:
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
+        cmd.id = self.idGenerator()
         place = CmdPlaceCubes()
         place.cubes_red = red
         place.cubes_yellow = yellow
@@ -32,6 +38,7 @@ class commandbuilder:
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
+        cmd.id = self.idGenerator()
         union.cmdMoveLift = state.value
         cmd.cmd = COMMAND.CMD_MOVE_LIFT.value
         cmd.dataUnion = union
@@ -41,6 +48,7 @@ class commandbuilder:
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
+        cmd.id = self.idGenerator()
         cmd.cmd = COMMAND.CMD_SEND_STATE.value
         state = CmdSendState()
         state.dummy1 = dummy1
@@ -55,6 +63,7 @@ class commandbuilder:
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
+        cmd.id = self.idGenerator()
         cmd.cmd = command.value
         cmd.dataUnion = union
         return cmd

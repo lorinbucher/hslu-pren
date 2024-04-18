@@ -6,6 +6,6 @@ from commandbuilder import commandbuilder
 import time
 
 if __name__ == "__main__":
-    reader = uartreader("/dev/ttys073")
+    reader = uartreader("/dev/ttys012")
     while True:
         reader.readFromUart()
