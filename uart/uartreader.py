@@ -32,7 +32,9 @@ class uartreader:
             sleep(0.03)
             data_left = ser.inWaiting()
             received_data += ser.read(data_left)
-            self.commands.put(self.decoder(received_data))
+            command = self.decoder(received_data)
+            if (command is not None):
+                self.commands.put(command)
         
 
     def decoder(self, received_data):

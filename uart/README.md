@@ -11,11 +11,12 @@
 - [x] move to separate package, e.g. uart, shared is only for shared classes used by differents parts of the SW
 - [x] parameterize functions to pass data. e.g. lift up / lift down
 - [x] read and write should run in separate task (blockierend, erst wieder schreiben, wenn acklowleged)
-- [ ] add id field -> waiting on protocol definition (schauen bei andre in github)
+- [x] add id field -> waiting on protocol definition (schauen bei andre in github)
 - [ ] implement checksum -> waiting on definition
 - [x] check for ACK, NACK, checksum error and resend in that case (with same message id)
 - [x] await ACK, NACK or timeout before sending other command (von aussen)
 - [x] support receiving GET_STATE response (SEND_STATE) 
+- [ ] make decoder funtion better, that when a command is not valid, make none and it wont add into the queue
 
 ## Local Setup
 

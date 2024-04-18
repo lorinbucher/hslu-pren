@@ -14,7 +14,8 @@ class uartcommunicator:
     def read_acknowledge(self):
         while (self.reader.is_empty() == False):
             command = self.reader.get_from_queue()
-            if (COMMAND(command.cmd) == COMMAND.CMD_ACKNOWLEDGE):
+            action = COMMAND(command.cmd)
+            if (action == COMMAND.CMD_ACKNOWLEDGE or action == COMMAND.CMD_NOT_ACKNOWLEDGE):
                 return True
         return False
     
@@ -23,7 +24,7 @@ class uartcommunicator:
         self.reader.empty_queue()
         while (self.read_acknowledge() == False):
             self.writer.writeToUart(cmd)
-            sleep(1.03)
+            sleep(3.03)
         
 
 if __name__ == "__main__":
