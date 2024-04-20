@@ -6,7 +6,7 @@ from commandbuilder import commandbuilder
 from time import sleep
 
 class uartcommunicator:
-    def __init__(self, path="/dev/ttys026"):
+    def __init__(self, path):
         self.reader = uartreader(path)
         self.writer = uartwriter(path)
 
@@ -27,11 +27,5 @@ class uartcommunicator:
             sleep(3.03)
         
 
-if __name__ == "__main__":
-    communicator = uartcommunicator()
-    command = commandbuilder().moveLift(CmdMoveLift.MOVE_UP)
-    #command = commandbuilder().placeCubes(1, 3, 1)
-    #command = commandbuilder().rotateGrid(2, 5)
-    #command = commandbuilder().sendState(1, 4, 2, 1)
-    communicator.write_uart(command)
+
     

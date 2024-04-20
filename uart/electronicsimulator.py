@@ -6,7 +6,7 @@ from commandbuilder import commandbuilder
 import time
 
 class electronicsimulator:
-    def __init__(self, path = "/dev/ttys027") -> None:
+    def __init__(self, path) -> None:
         self.writer = uartwriter(path)
         self.reader = uartreader(path)
 
@@ -38,5 +38,5 @@ class electronicsimulator:
     
 
 if __name__ == "__main__":
-    sim = electronicsimulator()
+    sim = electronicsimulator("/dev/ttys017")
     sim.simulate()
