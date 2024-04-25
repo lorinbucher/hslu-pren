@@ -31,8 +31,8 @@ Read / write to serial port from console to test the software:
 ```bash
 # minicom -D <port> -H -b 115200
 # E.g. read on one and write on second:
- minicom -D /dev/ttys047 -H -b 115200
- minicom -D /dev/ttys048 -H -b 115200
+minicom -D /dev/ttys047 -H -b 115200
+minicom -D /dev/ttys048 -H -b 115200
 ```
 
 SEND_STATE example response:

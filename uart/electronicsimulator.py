@@ -4,6 +4,7 @@ from uartwriter import uartwriter
 from command import COMMAND, Message, CmdMoveLift
 from commandbuilder import commandbuilder
 import time
+from ctypes import *
 
 class electronicsimulator:
     def __init__(self, path) -> None:
@@ -23,7 +24,7 @@ class electronicsimulator:
         self.writer.writeToUart(command)
 
     def disturb(self):
-        pass
+        self.writer.writeToUart(b'\x06\x01\x00\x00\x00')
 
     def simulate(self):
         while True:
@@ -38,5 +39,5 @@ class electronicsimulator:
     
 
 if __name__ == "__main__":
-    sim = electronicsimulator("/dev/ttys017")
+    sim = electronicsimulator("/dev/ttys027")
     sim.simulate()

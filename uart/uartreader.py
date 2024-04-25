@@ -38,13 +38,13 @@ class uartreader:
         
 
     def decoder(self, received_data):
-        if len(received_data) < 4 + sizeof(Message):
-            #print("Incomplete data received")
+        if len(received_data) != 23:
+            print("Incomplete data received")
             return None
 
         preamble = received_data[:4]
         if preamble != b'AAAB':
-            #print("Invalid preamble")
+            print("Invalid preamble")
             return None
 
         message_data = received_data[4:]
