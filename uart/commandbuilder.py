@@ -10,14 +10,13 @@ class commandbuilder:
         return commandbuilder.id
     
 
-    def rotateGrid(self, degrees_h, degrees_l):
+    def rotateGrid(self, degrees):
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
         cmd.id = self.idGenerator()
         rotate = CmdRotateGrid()
-        rotate.degrees_h = degrees_h
-        rotate.degrees_l = degrees_l
+        rotate.degrees = degrees
         union.cmdRotateGrid = rotate
         cmd.cmd = COMMAND.CMD_ROTATE_GRID.value
         cmd.dataUnion = union

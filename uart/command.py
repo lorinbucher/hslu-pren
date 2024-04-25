@@ -18,8 +18,7 @@ class COMMAND(Enum):
 
 
 class CmdRotateGrid(Structure):
-    _fields_ = [("degrees_h", c_uint8),
-                ("degrees_l", c_uint8)]
+    _fields_ = [("degrees", c_int16)]
 
 
 class CmdPlaceCubes(Structure):
