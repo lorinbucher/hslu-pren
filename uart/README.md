@@ -16,7 +16,7 @@
 - [x] check for ACK, NACK, checksum error and resend in that case (with same message id)
 - [x] await ACK, NACK or timeout before sending other command (von aussen)
 - [x] support receiving GET_STATE response (SEND_STATE) 
-- [ ] make decoder funtion better, that when a command is not valid, make none and it wont add into the queue
+- [x] make decoder funtion better, that when a command is not valid, make none and it wont add into the queue
 
 ## Local Setup
 

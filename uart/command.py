@@ -15,6 +15,7 @@ class COMMAND(Enum):
     CMD_SEND_STATE = 8
     CMD_PAUSE_BUILD = 9
     CMD_RESUME_BUILD = 10
+    CMD_PRIME_MAGAZINE = 11
 
 
 class CmdRotateGrid(Structure):
