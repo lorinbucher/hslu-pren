@@ -8,7 +8,7 @@ class CubeColor(StrEnum):
     UNKNOWN means it's not clear yet, if the space is empty or not.
     NONE means there is no cube at that position and therefore the space is empty.
     """
-    UNKNOWN = ''
+    UNKNOWN = 'unknown'
     NONE = ''
     BLUE = 'blue'
     RED = 'red'
