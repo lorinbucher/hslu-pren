@@ -1,10 +1,11 @@
 from builder.buildalgorithm import buildalgorithm
 from shared.cubecolor import CubeColor
+from builder.uartcomunicatorSpy import uartcomunicatorSpy
 import unittest
 
 class testbuildalgorithm(unittest.TestCase):
     def setUp(self):
-        self.builder = buildalgorithm()
+        self.builder = buildalgorithm(uartcomunicatorSpy())
 
     def test_move_array_left(self):
         # Test moving elements to the left
@@ -45,6 +46,8 @@ class testbuildalgorithm(unittest.TestCase):
         self.assertEqual(self.builder.moveArrayRight([1], 1), [1])
 
     def test_move_array(self):
+        # Reseting pos that tests also work when there are changes
+        self.builder.pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
 
         # Test 1: Move array left by 1
         self.builder.moveArray(1)

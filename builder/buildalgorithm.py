@@ -4,19 +4,49 @@ from shared.cubecolor import CubeColor
 from builder.uartcomunicatorSpy import uartcomunicatorSpy
 
 class buildalgorithm:
-    def __init__(self) -> None:
+    def __init__(self, communicator = uartcomunicatorSpy()) -> None:
         self.pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
-        self.communicator = uartcomunicatorSpy()
-        pass
+        self.communicator = communicator
+        self.placed = [False, False, False, False, False, False, False, False]
+        self.config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
     
+    # TBD Prüfung ob conffig sein kann oder ob ein cube unter einem anderen ist
 
-    def write_uart(self, cmd):
-        pass
+
+
+    def match(self, bottom):
+        c = [False, False, False, False]
+        for i in range(len(c)):
+            if bottom:
+                if self.pos[i] == self.config[i]:
+                    c[i] = True
+            else:
+                if self.pos[i] == self.config[i+4]:
+                    c[i] = True
+        self.placeCubes(c)
+
+    def placeCubes(self, conf):
+        c = conf
+        red = 0
+        blue = 0
+        yellow = 0
+        for i in range(len(c)):
+            if c[i]:
+                if self.pos[i] == CubeColor.RED:
+                    red = 1
+                elif self.pos[i] == CubeColor.YELLOW:
+                    yellow = 1
+                elif self.pos[i] == CubeColor.BLUE:
+                    blue = 1
+        self.communicator.write_uart(commandbuilder().placeCubes(red, yellow, blue))
         
+
     def rotateTimes(self, times):
         anlge = times * 90
         self.communicator.write_uart(commandbuilder().rotateGrid(anlge))
         self.pos = self.moveArrayLeft(self.pos)
+
+    # Bis hier getestet, der rest muss noch
 
     def moveArray(self, times):
         if times > 0:
