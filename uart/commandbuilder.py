@@ -1,6 +1,6 @@
 import serial
 from time import sleep
-from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message, CmdSendState
+from uart.command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message, CmdSendState
 
 class commandbuilder:
     id = 0

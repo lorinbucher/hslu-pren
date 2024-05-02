@@ -4,7 +4,7 @@ from enum import StrEnum
 
 class CubeColor(StrEnum):
     """The cube colors"""
-    UNKNOWN = ''
+    UNKNOWN = 'unknown'
     NONE = ''
     BLUE = 'blue'
     RED = 'red'

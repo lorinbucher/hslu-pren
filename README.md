@@ -53,3 +53,9 @@ source venv/bin/activate
 mypy .
 pylint . --recursive=yes --verbose
 ```
+
+## Run Unittests
+
+```shell
+python3 -m test.testbuildalgorithm
+```
