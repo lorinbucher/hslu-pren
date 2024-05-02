@@ -11,8 +11,9 @@ class buildalgorithm:
         self.config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
     
     # TBD Prüfung ob conffig sein kann oder ob ein cube unter einem anderen ist
+    # wenn ich kein match habe, direkt beim nachsten zwei moven
 
-
+    # Alle methoden ausser match getestet
 
     def match(self, bottom):
         c = [False, False, False, False]
@@ -38,23 +39,26 @@ class buildalgorithm:
                     yellow = 1
                 elif self.pos[i] == CubeColor.BLUE:
                     blue = 1
-        self.communicator.write_uart(commandbuilder().placeCubes(red, yellow, blue))
+        if red + blue + yellow > 0: self.communicator.write_uart(commandbuilder().placeCubes(red, yellow, blue))
         
+    # Folgende Methoden sind super getestet
 
     def rotateTimes(self, times):
         anlge = times * 90
         self.communicator.write_uart(commandbuilder().rotateGrid(anlge))
-        self.pos = self.moveArrayLeft(self.pos)
+        self.movePos(times)
 
-    # Bis hier getestet, der rest muss noch
 
-    def moveArray(self, times):
+    def movePos(self, times):
         if times > 0:
-            self.pos = self.moveArrayLeft(self.pos, times)
+            self.pos = buildalgorithm.moveArrayLeft(self.pos, times)
         elif times < 0:
-            self.pos = self.moveArrayRight(self.pos, times * (-1))
+            timesabs = abs(times)
+            self.pos = buildalgorithm.moveArrayRight(self.pos, timesabs)
+        else:
+            self.pos = self.pos
 
-    def moveArrayLeft(self, array, times):
+    def moveArrayLeft(array, times):
         a = array[:]
         for _ in range(times):
             cache = a[0]
@@ -63,7 +67,7 @@ class buildalgorithm:
             a[len(a)-1] = cache
         return a
 
-    def moveArrayRight(self, array, times):
+    def moveArrayRight(array, times):
         a = array[:]
         for _ in range(times):
             cache = a[len(a)-1]
