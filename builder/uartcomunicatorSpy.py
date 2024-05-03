@@ -10,7 +10,7 @@ class uartcomunicatorSpy:
     def write_uart(self, cmd):
         # Start by collecting the basic information
         result = f"Command ID: {cmd.cmd}"
-        result += f"Message ID: {cmd.id}"
+        result += f"Message ID: "
         result += f"Checksum: {cmd.checksum}"
 
         # Check the type of command and append the relevant data
@@ -28,4 +28,5 @@ class uartcomunicatorSpy:
             result += f"  Dummy3: {cmd.dataUnion.cmdSendState.dummy3}"
             result += f"  Dummy4: {cmd.dataUnion.cmdSendState.dummy4}"
 
+        print(result)
         self.lastresult = result

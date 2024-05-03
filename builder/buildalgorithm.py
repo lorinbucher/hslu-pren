@@ -2,29 +2,72 @@ from uart.command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, Dat
 from uart.commandbuilder import commandbuilder
 from shared.cubecolor import CubeColor
 from builder.uartcomunicatorSpy import uartcomunicatorSpy
+from builder.layer import Layer
 
 class buildalgorithm:
     def __init__(self, communicator = uartcomunicatorSpy()) -> None:
         self.pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
         self.communicator = communicator
         self.placed = [False, False, False, False, False, False, False, False]
-        self.config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
+        self.config = [CubeColor.BLUE, CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE, CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW]
     
-    # TBD Prüfung ob conffig sein kann oder ob ein cube unter einem anderen ist
-    # wenn ich kein match habe, direkt beim nachsten zwei moven
+    # Der builder und buildlayer sind nicht unit getestet, aber die funktionalitat sollte stimmen laut dem output.
 
-    # Alle methoden ausser match getestet
+    def build(self):
+        self.buildLayer(Layer.BOTTOM)
+        self.communicator.write_uart(commandbuilder().moveLift(CmdMoveLift.MOVE_DOWN))
+        self.buildLayer(Layer.TOP)
 
-    def match(self, bottom):
+    def buildLayer(self, layer):
+        while self.fullplacedCheck(layer) == False:
+            config = self.match(layer)
+            times = 0
+            while buildalgorithm.arrayFalseCheck(config):
+                times += 1
+                self.movePos(1)
+                config = self.match(layer)
+            self.rotateTimesNoArrayMovement(times)
+            self.updatePlaced(layer, config)
+            self.placeCubes(config)
+
+    # Ab hier habe ich mit unit tests getestet
+
+    def fullplacedCheck(self, layer):
+        if layer == Layer.BOTTOM:
+            ofset = 0
+        else:
+            ofset = 4
+        for i in range(4):
+            if not self.placed[i+ofset]:
+                return False
+        return True
+
+    def updatePlaced(self, layer, c):
+        if layer == Layer.BOTTOM:
+            ofset = 0
+        else:
+            ofset = 4
+        for i in range(len(c)):
+            if c[i]:
+                self.placed[i+ofset] = True
+
+
+    def match(self, layer):
         c = [False, False, False, False]
         for i in range(len(c)):
-            if bottom:
-                if self.pos[i] == self.config[i]:
+            if layer == Layer.BOTTOM:
+                if self.pos[i] == self.config[i] and self.placed[i] == False:
                     c[i] = True
             else:
-                if self.pos[i] == self.config[i+4]:
+                if self.pos[i] == self.config[i+4] and self.placed[i+4] == False:
                     c[i] = True
-        self.placeCubes(c)
+        return c
+
+    def arrayFalseCheck(array):
+        for i in range(len(array)):
+            if array[i]:
+                return False
+        return True
 
     def placeCubes(self, conf):
         c = conf
@@ -44,10 +87,15 @@ class buildalgorithm:
     # Folgende Methoden sind super getestet
 
     def rotateTimes(self, times):
-        anlge = times * 90
-        self.communicator.write_uart(commandbuilder().rotateGrid(anlge))
-        self.movePos(times)
+        if times > 0:
+            anlge = times * 90
+            self.communicator.write_uart(commandbuilder().rotateGrid(anlge))
+            self.movePos(times)
 
+    def rotateTimesNoArrayMovement(self, times):
+        if times > 0:
+            anlge = times * 90
+            self.communicator.write_uart(commandbuilder().rotateGrid(anlge))
 
     def movePos(self, times):
         if times > 0:
@@ -75,3 +123,9 @@ class buildalgorithm:
                 a[len(a)-i-1] = a[len(a)-i-2]
             a[0] = cache
         return a
+    
+
+if __name__ == "__main__":
+    communicator = uartcomunicatorSpy()
+    builder = buildalgorithm(communicator)
+    builder.build()
