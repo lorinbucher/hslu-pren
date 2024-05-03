@@ -1,8 +1,8 @@
 import threading
-from uartreader import uartreader
-from uartwriter import uartwriter
-from command import COMMAND, Message, CmdMoveLift
-from commandbuilder import commandbuilder
+from uart.uartreader import uartreader
+from uart.uartwriter import uartwriter
+from uart.command import COMMAND, Message, CmdMoveLift
+from uart.commandbuilder import commandbuilder
 from time import sleep
 
 class uartcommunicator:

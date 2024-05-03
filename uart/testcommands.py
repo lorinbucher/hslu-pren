@@ -1,8 +1,8 @@
-from uartcommunicator import uartcommunicator
-from commandbuilder import commandbuilder
+from uart.uartcommunicator import uartcommunicator
+from uart.commandbuilder import commandbuilder
 import serial
 from time import sleep
-from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message, CmdSendState
+from uart.command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message, CmdSendState
 
 if __name__ == "__main__":
     communicator = uartcommunicator("/dev/tty.usbmodem142103")

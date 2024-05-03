@@ -3,7 +3,7 @@ import threading
 from typing import cast
 import serial
 from time import sleep
-from command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message
+from uart.command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message
 from queue import Queue
 
 

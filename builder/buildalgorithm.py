@@ -95,13 +95,13 @@ class buildalgorithm:
     def rotateTimes(self, times):
         if times != 0:
             anlge = times * 90
-            self.communicator.write_uart(commandbuilder().rotateGrid(anlge))
+            self.communicator.write_uart(commandbuilder().rotateGridEfficient(anlge))
             self.movePos(times)
 
     def rotateTimesNoArrayMovement(self, times):
         if times != 0:
             anlge = times * 90
-            self.communicator.write_uart(commandbuilder().rotateGrid(anlge))
+            self.communicator.write_uart(commandbuilder().rotateGridEfficient(anlge))
 
     def movePos(self, times):
         if times > 0:

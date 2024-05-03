@@ -22,6 +22,11 @@ class commandbuilder:
         cmd.dataUnion = union
         return cmd
 
+    def rotateGridEfficient(self, degrees):
+        d = degrees % 360
+        if d > 180: d = - 360 + d
+        return self.rotateGrid(d)
+
     def placeCubes(self, red, yellow, blue):
         union = DataUnion()
         cmd = Message()

@@ -84,7 +84,14 @@ class testbuildalgorithm(unittest.TestCase):
         self.assertEqual('Command ID: 4Message ID: Checksum: 12Rotate Grid Degrees: 180', communicator.lastresult)
 
         builder.rotateTimes(-3)
-        self.assertEqual('Command ID: 4Message ID: Checksum: 12Rotate Grid Degrees: -270', communicator.lastresult)
+        self.assertEqual('Command ID: 4Message ID: Checksum: 12Rotate Grid Degrees: 90', communicator.lastresult)
+
+        builder.rotateTimes(-2)
+        self.assertEqual('Command ID: 4Message ID: Checksum: 12Rotate Grid Degrees: 180', communicator.lastresult)
+
+        builder.rotateTimes(-1)
+        self.assertEqual('Command ID: 4Message ID: Checksum: 12Rotate Grid Degrees: -90', communicator.lastresult)
+
 
     def testplaceCubes(self):
         communicator = uartcomunicatorSpy()
