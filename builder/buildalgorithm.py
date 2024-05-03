@@ -9,7 +9,7 @@ class buildalgorithm:
         self.pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
         self.communicator = communicator
         self.placed = [False, False, False, False, False, False, False, False]
-        self.config = [CubeColor.BLUE, CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE, CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW]
+        self.config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
     
     # Der builder und buildlayer sind nicht unit getestet, aber die funktionalitat sollte stimmen laut dem output.
 
@@ -87,13 +87,13 @@ class buildalgorithm:
     # Folgende Methoden sind super getestet
 
     def rotateTimes(self, times):
-        if times > 0:
+        if times != 0:
             anlge = times * 90
             self.communicator.write_uart(commandbuilder().rotateGrid(anlge))
             self.movePos(times)
 
     def rotateTimesNoArrayMovement(self, times):
-        if times > 0:
+        if times != 0:
             anlge = times * 90
             self.communicator.write_uart(commandbuilder().rotateGrid(anlge))
 

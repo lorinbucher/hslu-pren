@@ -2,6 +2,7 @@ from builder.buildalgorithm import buildalgorithm
 from shared.cubecolor import CubeColor
 from builder.uartcomunicatorSpy import uartcomunicatorSpy
 import unittest
+from builder.layer import Layer
 
 class testbuildalgorithm(unittest.TestCase):
     
@@ -123,24 +124,24 @@ class testbuildalgorithm(unittest.TestCase):
         communicator = uartcomunicatorSpy()
         builder = buildalgorithm(communicator)
 
-        self.assertEqual([False, False, False, False], builder.match(True))
+        self.assertEqual([False, False, False, False], builder.match(Layer.BOTTOM))
         builder.rotateTimes(1)
-        self.assertEqual([True, True, False, False], builder.match(True))
+        self.assertEqual([True, True, False, False], builder.match(Layer.BOTTOM))
         builder.rotateTimes(1)
-        self.assertEqual([False, False, True, True], builder.match(True))
+        self.assertEqual([False, False, True, True], builder.match(Layer.BOTTOM))
 
     def test_update(self):
         communicator = uartcomunicatorSpy()
         builder = buildalgorithm(communicator)
 
-        builder.updatePlaced(True, [True, True, True, True])
+        builder.updatePlaced(Layer.BOTTOM, [True, True, True, True])
         self.assertEqual([True, True, True, True, False, False, False, False], builder.placed)
-        self.assertFalse(builder.fullplacedCheck(False))
-        self.assertTrue(builder.fullplacedCheck(True))
+        self.assertFalse(builder.fullplacedCheck(Layer.TOP))
+        self.assertTrue(builder.fullplacedCheck(Layer.BOTTOM))
         builder.updatePlaced(False, [True, True, True, True])
         self.assertEqual([True, True, True, True, True, True, True, True], builder.placed)
-        self.assertTrue(builder.fullplacedCheck(True))
-        self.assertTrue(builder.fullplacedCheck(False))
+        self.assertTrue(builder.fullplacedCheck(Layer.TOP))
+        self.assertTrue(builder.fullplacedCheck(Layer.BOTTOM))
 
 
 
