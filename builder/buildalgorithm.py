@@ -5,6 +5,7 @@ from builder.uartcomunicatorSpy import uartcomunicatorSpy
 from builder.layer import Layer
 
 class buildalgorithm:
+    # Default Config nicht ändern, sonst gehen die unit tests nicht mehr
     def __init__(self, communicator = uartcomunicatorSpy()) -> None:
         self.pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
         self.communicator = communicator
@@ -12,11 +13,16 @@ class buildalgorithm:
         self.config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
     
     # Der builder und buildlayer sind nicht unit getestet, aber die funktionalitat sollte stimmen laut dem output.
+    # Wenn nur none matched, dann bewegt er sich 90 und dann nochmals 90
+
+    def setConfig(self, config):
+        self.config = config
 
     def build(self):
         self.buildLayer(Layer.BOTTOM)
         self.communicator.write_uart(commandbuilder().moveLift(CmdMoveLift.MOVE_DOWN))
         self.buildLayer(Layer.TOP)
+        self.placed = [False] * len(self.placed)
 
     def buildLayer(self, layer):
         while self.fullplacedCheck(layer) == False:
@@ -128,4 +134,7 @@ class buildalgorithm:
 if __name__ == "__main__":
     communicator = uartcomunicatorSpy()
     builder = buildalgorithm(communicator)
+    builder.build()
+
+    builder.setConfig([CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE])
     builder.build()
