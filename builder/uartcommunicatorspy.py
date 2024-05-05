@@ -1,7 +1,9 @@
+"""Implements a simulation of the UART communication for the unit tests."""
 from uart.command import Command, CmdMoveLift
 
 
 class UartCommunicatorSpy:
+    """Simulates the UART communication for the unit tests."""
     def __init__(self) -> None:
         self._last_result = None
 

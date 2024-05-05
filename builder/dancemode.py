@@ -1,3 +1,4 @@
+"""Implements a special dance mode."""
 from uart.command import CmdMoveLift
 from uart.commandbuilder import CommandBuilder
 
@@ -5,6 +6,7 @@ from .uartcommunicatorspy import UartCommunicatorSpy
 
 
 class DanceMode:
+    """Performs a special dance mode."""
     def __init__(self) -> None:
         self.communicator = UartCommunicatorSpy()
 

@@ -1,3 +1,4 @@
+"""Unit tests for the build algorithm."""
 import unittest
 
 from builder.buildalgorithm import BuildAlgorithm
@@ -7,6 +8,7 @@ from shared.enumerations import CubeColor
 
 
 class TestBuildAlgorithm(unittest.TestCase):
+    """Test class for the build algorithm."""
 
     def test_move_array_left(self):
         # Test moving elements to the left

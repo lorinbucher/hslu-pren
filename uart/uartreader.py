@@ -1,3 +1,4 @@
+"""Implements the reader for the UART communication protocol."""
 import threading
 from queue import Queue
 from time import sleep
@@ -8,6 +9,8 @@ from .command import Command, CmdMoveLift, Message
 
 
 class UartReader:
+    """Reads data from the UART interface."""
+
     def __init__(self, path: str) -> None:
         self.path = path
         self.commands: Queue = Queue()

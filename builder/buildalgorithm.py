@@ -1,3 +1,4 @@
+"""Implements the build algorithm."""
 from shared.enumerations import CubeColor
 from uart.command import CmdMoveLift
 from uart.commandbuilder import CommandBuilder
@@ -7,6 +8,8 @@ from .uartcommunicatorspy import UartCommunicatorSpy
 
 
 class BuildAlgorithm:
+    """Sends the commands using the UART communication protocol to build the detected cube configuration."""
+
     # Default Config nicht ändern, sonst gehen die unit tests nicht mehr
     def __init__(self, communicator=UartCommunicatorSpy()) -> None:
         self.pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]

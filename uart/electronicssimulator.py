@@ -1,3 +1,4 @@
+"""Helper classes to simulate the electronics controller used for development."""
 from .command import Command
 from .commandbuilder import CommandBuilder
 from .uartreader import UartReader
@@ -5,6 +6,8 @@ from .uartwriter import UartWriter
 
 
 class ElectronicsSimulator:
+    """Simulates the electronics controller."""
+
     def __init__(self, path) -> None:
         self.writer = UartWriter(path)
         self.reader = UartReader(path)

@@ -1,9 +1,11 @@
+"""Defines the commands used for the UART communication protocol."""
 from _ctypes import Structure, Union
 from ctypes import c_int16, c_uint8
 from enum import Enum
 
 
 class Command(Enum):
+    """The build commands."""
     RESERVED = 0
     ACKNOWLEDGE = 1
     NOT_ACKNOWLEDGE = 2
@@ -19,21 +21,25 @@ class Command(Enum):
 
 
 class CmdRotateGrid(Structure):
+    """The data payload of the rotate grid command."""
     _fields_ = [("degrees", c_int16)]
 
 
 class CmdPlaceCubes(Structure):
+    """The data payload of the place cubes command."""
     _fields_ = [("cubes_red", c_uint8),
                 ("cubes_yellow", c_uint8),
                 ("cubes_blue", c_uint8)]
 
 
 class CmdMoveLift(Enum):
+    """The data payload of the move lift command."""
     MOVE_UP = 0
     MOVE_DOWN = 1
 
 
 class CmdSendState(Structure):
+    """The data payload of the send state command."""
     _fields_ = [("dummy1", c_uint8),
                 ("dummy2", c_uint8),
                 ("dummy3", c_uint8),
@@ -41,6 +47,7 @@ class CmdSendState(Structure):
 
 
 class DataUnion(Union):
+    """The data payload for the UART message."""
     _fields_ = [("cmdRotateGrid", CmdRotateGrid),
                 ("cmdPlaceCubes", CmdPlaceCubes),
                 ("cmdMoveLift", c_uint8),
@@ -49,6 +56,7 @@ class DataUnion(Union):
 
 
 class Message(Structure):
+    """The UART message."""
     _fields_ = [("cmd", c_uint8),
                 ("id", c_uint8),
                 ("dataUnion", DataUnion),

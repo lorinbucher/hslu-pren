@@ -1,7 +1,10 @@
+"""Implements the writer for the UART communication protocol."""
 import serial
 
 
 class UartWriter:
+    """Writes data to the UART interface."""
+
     def __init__(self, path) -> None:
         self.path = path
 

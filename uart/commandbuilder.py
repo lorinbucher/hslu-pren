@@ -1,7 +1,9 @@
+"""Helper classes to build the commands for the UART communication protocol."""
 from .command import Command, CmdRotateGrid, CmdPlaceCubes, DataUnion, Message, CmdSendState
 
 
 class CommandBuilder:
+    """Assembles the command for the UART communication protocol."""
     id = 0
 
     def generate_id(self):

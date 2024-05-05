@@ -1,3 +1,4 @@
+"""Implements the UART communication protocol."""
 from time import sleep
 
 from .command import Command
@@ -6,6 +7,8 @@ from .uartwriter import UartWriter
 
 
 class UartCommunicator:
+    """Communicates with the electronics controller using the UART communication protocol."""
+
     def __init__(self, path):
         self.reader = UartReader(path)
         self.writer = UartWriter(path)
