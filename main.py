@@ -58,3 +58,8 @@ if __name__ == '__main__':
     recognition_manager.clear_queue()
     recognition_manager.start()
     recognition_manager.join()
+
+    # Temporary for testing
+    if config_conn_recv.poll():
+        data = config_conn_recv.recv()
+        logging.info('Detected cube configuration: %s', data.to_dict())

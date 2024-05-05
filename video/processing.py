@@ -1,6 +1,7 @@
 """Implements the video stream processing module."""
 import logging
 import multiprocessing.connection
+import queue
 import time
 from multiprocessing import Process, Queue
 
@@ -35,16 +36,20 @@ class StreamProcessing:
     def _run(self) -> None:
         """Runs the video stream process."""
         self._logger.info('Video stream process started')
-        completed = False
-        while not completed:
-            time.sleep(1)
+        while not self._recognition_completed():
+            time.sleep(0.5)
 
-            # TODO (lorin): add error handling
-            self._process_queue.put('Test')
-
-            if self._connection.poll():
-                data = self._connection.recv()
-                if isinstance(data, bool) and data:
-                    completed = True
+            try:
+                self._process_queue.put('Test', block=False)
+            except queue.Full:
+                self._logger.warning('Video stream processing queue is full')
 
         self._logger.info('Video stream process stopped')
+
+    def _recognition_completed(self):
+        """Returns true if the recognition has been completed."""
+        if not self._connection.poll():
+            return False
+
+        data = self._connection.recv()
+        return isinstance(data, bool) and data

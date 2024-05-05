@@ -57,6 +57,14 @@ class CubeConfiguration:
     """
     config = [CubeColor.UNKNOWN for _ in range(8)]
 
+    def completed(self):
+        """Returns true if all positions are known."""
+        return CubeColor.UNKNOWN not in self.config
+
+    def reset(self):
+        """Resets the configuration."""
+        self.config = [CubeColor.UNKNOWN for _ in range(8)]
+
     def set_color(self, pos: int, color: CubeColor):
         """Sets the color at the specified position, position starts at 1."""
         if pos < 1 or pos > 8:

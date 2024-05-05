@@ -1,6 +1,7 @@
 """Implements the image recognition manager."""
 import logging
 import multiprocessing.connection
+import queue
 from multiprocessing import Pipe, Queue
 
 from shared.data import AppConfiguration
@@ -11,12 +12,12 @@ from video.recognition import CubeRecognition
 class RecognitionManager:
     """Manages the stream processing and image recognition tasks."""
 
-    def __init__(self, app_config: AppConfiguration, config_conn: multiprocessing.connection.Connection):
+    def __init__(self, app_config: AppConfiguration, builder_conn: multiprocessing.connection.Connection):
         self._logger = logging.getLogger('video.manager')
         self._conn_recv, self._conn_send = Pipe(duplex=False)
         self._process_queue: Queue = Queue(maxsize=1000)
-        self._cube_recognition = CubeRecognition(app_config, config_conn, self._conn_send, self._process_queue)
         self._stream_processing = StreamProcessing(app_config, self._conn_recv, self._process_queue)
+        self._cube_recognition = CubeRecognition(app_config, builder_conn, self._conn_send, self._process_queue)
 
     def start(self) -> None:
         """Starts the video stream processing and cube image recognition tasks."""
@@ -35,7 +36,10 @@ class RecognitionManager:
     def clear_queue(self) -> None:
         """Clears the processing queue."""
         self._logger.info('Clearing processing queue')
-        # TODO (lorin): add error handling
-        while not self._process_queue.empty():
-            self._process_queue.get(block=False, timeout=0.1)
+        try:
+            while not self._process_queue.empty():
+                self._process_queue.get(block=False)
+        except queue.Empty:
+            self._logger.error('Video processing queue is empty')
+
         self._logger.info('Processing queue cleared')
