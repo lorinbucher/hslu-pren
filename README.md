@@ -6,7 +6,9 @@
 * [Configuration](#configuration)
 * [Deployment](#deployment)
 * [Development](#development)
-  * [Code Quality Check](#code-quality-check)
+    * [Code Quality Check](#code-quality-check)
+    * [Unit Tests](#unit-tests)
+    * [Local UART Setup](#local-uart-setup)
 
 ## Installation
 
@@ -54,16 +56,27 @@ mypy .
 pylint . --recursive=yes --verbose
 ```
 
-## Run Unittests
+### Unit Tests
 
-The metods have to be called test or else they wont run after this command
+Note: The test methods have to be called test or else they won't run after this command.
 
 ```shell
-python3 -m test.testbuildalgorithm
+python3 -m unittest
 ```
 
-## Run one Class
+### Local UART Setup
 
-```shell
-python3 -m builder.buildalgorithm
+Create virtual serial port -> creates two devices e.g. /dev/pts/3, /dev/pts/4:
+
+```bash
+socat -d -d pty,rawer,echo=0 pty,rawer,echo=0
+```
+
+Read / write to serial port from console to test the software:
+
+```bash
+# minicom -D <port> -H -b 115200
+# E.g. read on one and write on second:
+minicom -D /dev/ttys047 -H -b 115200
+minicom -D /dev/ttys048 -H -b 115200
 ```
