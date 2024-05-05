@@ -1,21 +1,21 @@
-from ctypes import POINTER, c_uint8, sizeof
 import threading
-from typing import cast
-import serial
-from time import sleep
-from uart.command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message
 from queue import Queue
+from time import sleep
+
+import serial
+
+from .command import Command, CmdMoveLift, Message
 
 
-class uartreader:
-    def __init__(self, path) -> None:
+class UartReader:
+    def __init__(self, path: str) -> None:
         self.path = path
-        self.commands = Queue()
-        thread_reader = threading.Thread(target=self.readFromUart)
+        self.commands: Queue = Queue()
+        thread_reader = threading.Thread(target=self.read)
         thread_reader.start()
 
     def empty_queue(self):
-        while (not self.commands.empty()):
+        while not self.commands.empty():
             self.commands.get()
 
     def is_empty(self):
@@ -23,9 +23,8 @@ class uartreader:
 
     def get_from_queue(self):
         return self.commands.get()
-        
 
-    def readFromUart(self):
+    def read(self):
         ser = serial.Serial(self.path, 115200)
         while True:
             received_data = ser.read()
@@ -35,7 +34,6 @@ class uartreader:
             command = self.decoder(received_data)
             if (command is not None):
                 self.commands.put(command)
-        
 
     def decoder(self, received_data):
         if len(received_data) != 23:
@@ -49,43 +47,37 @@ class uartreader:
 
         message_data = received_data[4:]
         message = Message.from_buffer_copy(message_data)
-        command_type = COMMAND(message.cmd)
-
-        #print(f"Command: {command_type.name}")
+        command_type = Command(message.cmd)
 
         # Access the union data safely
-        if command_type == COMMAND.CMD_ACKNOWLEDGE:
+        if command_type == Command.ACKNOWLEDGE:
             print("Acknowledged")
-        elif command_type == COMMAND.CMD_NOT_ACKNOWLEDGE:
+        elif command_type == Command.NOT_ACKNOWLEDGE:
             print("Not Acknowledged")
-        elif command_type == COMMAND.CMD_CRC_ERROR:
+        elif command_type == Command.CRC_ERROR:
             print("CRC Error")
-        elif command_type == COMMAND.CMD_ROTATE_GRID:
+        elif command_type == Command.ROTATE_GRID:
             rotate_data = message.dataUnion.cmdRotateGrid
             print(f"Rotate Grid: {rotate_data.degrees_h} degrees high, {rotate_data.degrees_l} degrees low")
-        elif command_type == COMMAND.CMD_PLACE_CUBES:
+        elif command_type == Command.PLACE_CUBES:
             place_data = message.dataUnion.cmdPlaceCubes
-            print(f"Place Cubes: Red {place_data.cubes_red}, Yellow {place_data.cubes_yellow}, Blue {place_data.cubes_blue}")
-        elif command_type == COMMAND.CMD_MOVE_LIFT:
+            print(
+                f"Place Cubes: Red {place_data.cubes_red}, Yellow {place_data.cubes_yellow}, Blue {place_data.cubes_blue}")
+        elif command_type == Command.MOVE_LIFT:
             move_data = message.dataUnion.cmdMoveLift
             move_direction = "Up" if move_data == CmdMoveLift.MOVE_UP.value else "Down"
             print(f"Move Lift: {move_direction}")
-        elif command_type == COMMAND.CMD_GET_STATE:
+        elif command_type == Command.GET_STATE:
             print("Get State Command")
-        elif command_type == COMMAND.CMD_SEND_STATE:
+        elif command_type == Command.SEND_STATE:
             state_data = message.dataUnion.cmdSendState
-            print(f"State Data: dummy1 {state_data.dummy1}, dummy2 {state_data.dummy2}, dummy3 {state_data.dummy3}, dummy4 {state_data.dummy4}")
-        elif command_type == COMMAND.CMD_PAUSE_BUILD:
+            print(
+                f"State Data: dummy1 {state_data.dummy1}, dummy2 {state_data.dummy2}, dummy3 {state_data.dummy3}, dummy4 {state_data.dummy4}")
+        elif command_type == Command.PAUSE_BUILD:
             print("Pause Build Command")
-        elif command_type == COMMAND.CMD_RESUME_BUILD:
+        elif command_type == Command.RESUME_BUILD:
             print("Resume Build Command")
         else:
             print("Unknown Command")
 
         return message
-
-
-if __name__ == '__main__':
-    reader = uartreader("/dev/ttys072")
-    reader.readFromUart()
-

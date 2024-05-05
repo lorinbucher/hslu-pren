@@ -1,62 +1,64 @@
-from uart.command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message, CmdSendState
-from uart.commandbuilder import commandbuilder
-from shared.cubecolor import CubeColor
-from builder.uartcomunicatorSpy import uartcomunicatorSpy
-from builder.layer import Layer
+from shared.enumerations import CubeColor
+from uart.command import CmdMoveLift
+from uart.commandbuilder import CommandBuilder
 
-class buildalgorithm:
+from .layer import Layer
+from .uartcommunicatorspy import UartCommunicatorSpy
+
+
+class BuildAlgorithm:
     # Default Config nicht ändern, sonst gehen die unit tests nicht mehr
-    def __init__(self, communicator = uartcomunicatorSpy()) -> None:
+    def __init__(self, communicator=UartCommunicatorSpy()) -> None:
         self.pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
         self.communicator = communicator
         self.placed = [False, False, False, False, False, False, False, False]
-        self.config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
-    
+        self.config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW,
+                       CubeColor.NONE, CubeColor.RED]
+
     # Der builder und buildlayer sind nicht unit getestet, aber die funktionalitat sollte stimmen laut dem output.
     # Wenn nur none matched, dann bewegt er sich 90 und dann nochmals 90
 
-    def setConfig(self, config):
+    def set_config(self, config):
         self.config = config
 
     def build(self):
-        self.buildLayer(Layer.BOTTOM)
-        self.communicator.write_uart(commandbuilder().moveLift(CmdMoveLift.MOVE_DOWN))
-        self.buildLayer(Layer.TOP)
+        self.build_layer(Layer.BOTTOM)
+        self.communicator.write_uart(CommandBuilder().move_lift(CmdMoveLift.MOVE_DOWN))
+        self.build_layer(Layer.TOP)
         self.placed = [False] * len(self.placed)
 
-    def buildLayer(self, layer):
-        while self.fullplacedCheck(layer) == False:
+    def build_layer(self, layer):
+        while not self.full_placed_check(layer):
             config = self.match(layer)
             times = 0
-            while buildalgorithm.arrayFalseCheck(config):
+            while BuildAlgorithm.array_false_check(config):
                 times += 1
-                self.movePos(1)
+                self.move_pos(1)
                 config = self.match(layer)
-            self.rotateTimesNoArrayMovement(times)
-            self.updatePlaced(layer, config)
-            self.placeCubes(config)
+            self.rotate_times_no_array_movement(times)
+            self.update_placed(layer, config)
+            self.place_cubes(config)
 
     # Ab hier habe ich mit unit tests getestet
 
-    def fullplacedCheck(self, layer):
+    def full_placed_check(self, layer):
         if layer == Layer.BOTTOM:
-            ofset = 0
+            offset = 0
         else:
-            ofset = 4
+            offset = 4
         for i in range(4):
-            if not self.placed[i+ofset]:
+            if not self.placed[i + offset]:
                 return False
         return True
 
-    def updatePlaced(self, layer, c):
+    def update_placed(self, layer, c):
         if layer == Layer.BOTTOM:
-            ofset = 0
+            offset = 0
         else:
-            ofset = 4
+            offset = 4
         for i in range(len(c)):
             if c[i]:
-                self.placed[i+ofset] = True
-
+                self.placed[i + offset] = True
 
     def match(self, layer):
         c = [False, False, False, False]
@@ -65,17 +67,17 @@ class buildalgorithm:
                 if self.pos[i] == self.config[i] and self.placed[i] == False:
                     c[i] = True
             else:
-                if self.pos[i] == self.config[i+4] and self.placed[i+4] == False:
+                if self.pos[i] == self.config[i + 4] and self.placed[i + 4] == False:
                     c[i] = True
         return c
 
-    def arrayFalseCheck(array):
+    def array_false_check(self, array):
         for i in range(len(array)):
             if array[i]:
                 return False
         return True
 
-    def placeCubes(self, conf):
+    def place_cubes(self, conf):
         c = conf
         red = 0
         blue = 0
@@ -88,53 +90,55 @@ class buildalgorithm:
                     yellow = 1
                 elif self.pos[i] == CubeColor.BLUE:
                     blue = 1
-        if red + blue + yellow > 0: self.communicator.write_uart(commandbuilder().placeCubes(red, yellow, blue))
-        
+        if red + blue + yellow > 0:
+            self.communicator.write_uart(CommandBuilder().place_cubes(red, yellow, blue))
+
     # Folgende Methoden sind super getestet
 
-    def rotateTimes(self, times):
+    def rotate_times(self, times):
         if times != 0:
             anlge = times * 90
-            self.communicator.write_uart(commandbuilder().rotateGridEfficient(anlge))
-            self.movePos(times)
+            self.communicator.write_uart(CommandBuilder().rotate_grid_efficient(anlge))
+            self.move_pos(times)
 
-    def rotateTimesNoArrayMovement(self, times):
+    def rotate_times_no_array_movement(self, times):
         if times != 0:
             anlge = times * 90
-            self.communicator.write_uart(commandbuilder().rotateGridEfficient(anlge))
+            self.communicator.write_uart(CommandBuilder().rotate_grid_efficient(anlge))
 
-    def movePos(self, times):
+    def move_pos(self, times):
         if times > 0:
-            self.pos = buildalgorithm.moveArrayLeft(self.pos, times)
+            self.pos = BuildAlgorithm.move_array_left(self.pos, times)
         elif times < 0:
             timesabs = abs(times)
-            self.pos = buildalgorithm.moveArrayRight(self.pos, timesabs)
+            self.pos = BuildAlgorithm.move_array_right(self.pos, timesabs)
         else:
             self.pos = self.pos
 
-    def moveArrayLeft(array, times):
+    def move_array_left(self, array, times):
         a = array[:]
         for _ in range(times):
             cache = a[0]
             for i in range(len(a) - 1):
-                a[i] = a[i+1]
-            a[len(a)-1] = cache
+                a[i] = a[i + 1]
+            a[len(a) - 1] = cache
         return a
 
-    def moveArrayRight(array, times):
+    def move_array_right(self, array, times):
         a = array[:]
         for _ in range(times):
-            cache = a[len(a)-1]
+            cache = a[len(a) - 1]
             for i in range(len(a) - 1):
-                a[len(a)-i-1] = a[len(a)-i-2]
+                a[len(a) - i - 1] = a[len(a) - i - 2]
             a[0] = cache
         return a
-    
+
 
 if __name__ == "__main__":
-    communicator = uartcomunicatorSpy()
-    builder = buildalgorithm(communicator)
+    communicator = UartCommunicatorSpy()
+    builder = BuildAlgorithm(communicator)
     builder.build()
 
-    builder.setConfig([CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE])
+    builder.set_config([CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE,
+                        CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE])
     builder.build()

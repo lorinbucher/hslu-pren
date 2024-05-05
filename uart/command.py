@@ -1,21 +1,21 @@
+from _ctypes import Structure, Union
+from ctypes import c_int16, c_uint8
 from enum import Enum
-from ctypes import *
 
 
-# Hier ich habe die Config von der Elektronik so nach python geschrieben
-class COMMAND(Enum):
-    CMD_RESERVED = 0
-    CMD_ACKNOWLEDGE = 1
-    CMD_NOT_ACKNOWLEDGE = 2
-    CMD_CRC_ERROR = 3
-    CMD_ROTATE_GRID = 4
-    CMD_PLACE_CUBES = 5
-    CMD_MOVE_LIFT = 6
-    CMD_GET_STATE = 7
-    CMD_SEND_STATE = 8
-    CMD_PAUSE_BUILD = 9
-    CMD_RESUME_BUILD = 10
-    CMD_PRIME_MAGAZINE = 11
+class Command(Enum):
+    RESERVED = 0
+    ACKNOWLEDGE = 1
+    NOT_ACKNOWLEDGE = 2
+    CRC_ERROR = 3
+    ROTATE_GRID = 4
+    PLACE_CUBES = 5
+    MOVE_LIFT = 6
+    GET_STATE = 7
+    SEND_STATE = 8
+    PAUSE_BUILD = 9
+    RESUME_BUILD = 10
+    PRIME_MAGAZINE = 11
 
 
 class CmdRotateGrid(Structure):

@@ -1,7 +1,7 @@
 """Shared data classes"""
 from dataclasses import dataclass, fields
 
-from shared.cubecolor import CubeColor
+from shared.enumerations import CubeColor
 
 
 @dataclass

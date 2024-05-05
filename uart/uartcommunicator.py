@@ -1,31 +1,25 @@
-import threading
-from uart.uartreader import uartreader
-from uart.uartwriter import uartwriter
-from uart.command import COMMAND, Message, CmdMoveLift
-from uart.commandbuilder import commandbuilder
 from time import sleep
 
-class uartcommunicator:
-    def __init__(self, path):
-        self.reader = uartreader(path)
-        self.writer = uartwriter(path)
+from .command import Command
+from .uartreader import UartReader
+from .uartwriter import UartWriter
 
-    
+
+class UartCommunicator:
+    def __init__(self, path):
+        self.reader = UartReader(path)
+        self.writer = UartWriter(path)
+
     def read_acknowledge(self):
-        while (self.reader.is_empty() == False):
+        while not self.reader.is_empty():
             command = self.reader.get_from_queue()
-            action = COMMAND(command.cmd)
-            if (action == COMMAND.CMD_ACKNOWLEDGE or action == COMMAND.CMD_NOT_ACKNOWLEDGE):
+            action = Command(command.cmd)
+            if action == Command.ACKNOWLEDGE or action == Command.NOT_ACKNOWLEDGE:
                 return True
         return False
-    
 
     def write_uart(self, cmd):
         self.reader.empty_queue()
-        while (self.read_acknowledge() == False):
-            self.writer.writeToUart(cmd)
+        while not self.read_acknowledge():
+            self.writer.write(cmd)
             sleep(3.03)
-        
-
-
-    

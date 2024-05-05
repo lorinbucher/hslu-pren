@@ -6,7 +6,7 @@ import tomllib
 
 import shared.config as app_config
 from shared.data import AppConfiguration, CubeConfiguration
-from shared.enum import CubeColor
+from shared.enumerations import CubeColor
 from web.api import CubeApi
 
 

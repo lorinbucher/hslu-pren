@@ -1,62 +1,61 @@
-import serial
-from time import sleep
-from uart.command import COMMAND, CmdRotateGrid, CmdPlaceCubes, CmdMoveLift, DataUnion, Message, CmdSendState
+from .command import Command, CmdRotateGrid, CmdPlaceCubes, DataUnion, Message, CmdSendState
 
-class commandbuilder:
+
+class CommandBuilder:
     id = 0
 
-    def idGenerator(self):
-        commandbuilder.id = (commandbuilder.id + 1) % 256
-        return commandbuilder.id
-    
+    def generate_id(self):
+        CommandBuilder.id = (CommandBuilder.id + 1) % 256
+        return CommandBuilder.id
 
-    def rotateGrid(self, degrees):
+    def rotate_grid(self, degrees):
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
-        cmd.id = self.idGenerator()
+        cmd.id = self.generate_id()
         rotate = CmdRotateGrid()
         rotate.degrees = degrees
         union.cmdRotateGrid = rotate
-        cmd.cmd = COMMAND.CMD_ROTATE_GRID.value
+        cmd.cmd = Command.ROTATE_GRID.value
         cmd.dataUnion = union
         return cmd
 
-    def rotateGridEfficient(self, degrees):
+    def rotate_grid_efficient(self, degrees):
         d = degrees % 360
-        if d > 180: d = - 360 + d
-        return self.rotateGrid(d)
+        if d > 180:
+            d -= 360
+        return self.rotate_grid(d)
 
-    def placeCubes(self, red, yellow, blue):
+    def place_cubes(self, red, yellow, blue):
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
-        cmd.id = self.idGenerator()
+        cmd.id = self.generate_id()
         place = CmdPlaceCubes()
         place.cubes_red = red
         place.cubes_yellow = yellow
         place.cubes_blue = blue
         union.cmdPlaceCubes = place
-        cmd.cmd = COMMAND.CMD_PLACE_CUBES.value
+        cmd.cmd = Command.PLACE_CUBES.value
         cmd.dataUnion = union
         return cmd
 
-    def moveLift(self, state):
+    def move_lift(self, state):
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
-        cmd.id = self.idGenerator()
+        cmd.id = self.generate_id()
         union.cmdMoveLift = state.value
-        cmd.cmd = COMMAND.CMD_MOVE_LIFT.value
+        cmd.cmd = Command.MOVE_LIFT.value
         cmd.dataUnion = union
         return cmd
 
-    def sendState(self, dummy1, dummy2, dummy3, dummy4):
+    def send_state(self, dummy1, dummy2, dummy3, dummy4):
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
-        cmd.id = self.idGenerator()
-        cmd.cmd = COMMAND.CMD_SEND_STATE.value
+        cmd.id = self.generate_id()
+        cmd.cmd = Command.SEND_STATE.value
         state = CmdSendState()
         state.dummy1 = dummy1
         state.dummy2 = dummy2
@@ -66,14 +65,11 @@ class commandbuilder:
         cmd.dataUnion = union
         return cmd
 
-    def otherCommands(self, command):
+    def other_commands(self, command):
         union = DataUnion()
         cmd = Message()
         cmd.checksum = 12
-        cmd.id = self.idGenerator()
+        cmd.id = self.generate_id()
         cmd.cmd = command.value
         cmd.dataUnion = union
         return cmd
-    
-if __name__ == "__main__":
-    command = commandbuilder().otherCommands(COMMAND.CMD_ACKNOWLEDGE)
