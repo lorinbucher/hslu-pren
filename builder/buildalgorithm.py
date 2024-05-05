@@ -67,10 +67,10 @@ class BuildAlgorithm:
         c = [False, False, False, False]
         for i in range(len(c)):
             if layer == Layer.BOTTOM:
-                if self.pos[i] == self.config[i] and self.placed[i] == False:
+                if self.pos[i] == self.config[i] and not self.placed[i]:
                     c[i] = True
             else:
-                if self.pos[i] == self.config[i + 4] and self.placed[i + 4] == False:
+                if self.pos[i] == self.config[i + 4] and not self.placed[i + 4]:
                     c[i] = True
         return c
 
