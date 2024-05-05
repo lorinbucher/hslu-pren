@@ -29,7 +29,7 @@ class ElectronicsSimulator:
 
     def simulate(self):
         while True:
-            command = int(input("1 ack, 2 nack, 3 crc"))
+            command = int(input('1 ack, 2 nack, 3 crc'))
             if command == 1:
                 self.acknowledge()
             elif command == 2:
@@ -38,6 +38,6 @@ class ElectronicsSimulator:
                 self.checksum_error()
 
 
-if __name__ == "__main__":
-    sim = ElectronicsSimulator("/dev/ttys027")
+if __name__ == '__main__':
+    sim = ElectronicsSimulator('/dev/ttys027')
     sim.simulate()

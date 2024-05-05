@@ -56,7 +56,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         # Test 1: Move array left by 1
         builder.move_pos(1)
         assert builder.pos == [CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE,
-                               CubeColor.NONE], "Test 1 Failed: moveArray(1) did not rotate left correctly."
+                               CubeColor.NONE], 'Test 1 Failed: moveArray(1) did not rotate left correctly.'
 
         # Resetting position for the next test
         builder.pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
@@ -64,7 +64,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         # Test 2: Move array left by 2
         builder.move_pos(2)
         assert builder.pos == [CubeColor.YELLOW, CubeColor.BLUE, CubeColor.NONE,
-                               CubeColor.RED], "Test 2 Failed: moveArray(2) did not rotate left twice correctly."
+                               CubeColor.RED], 'Test 2 Failed: moveArray(2) did not rotate left twice correctly.'
 
         # Resetting position for the next test
         builder.pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
@@ -72,7 +72,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         # Test 3: Move array right by 1
         builder.move_pos(-1)
         assert builder.pos == [CubeColor.BLUE, CubeColor.NONE, CubeColor.RED,
-                               CubeColor.YELLOW], "Test 3 Failed: moveArray(-1) did not rotate right correctly."
+                               CubeColor.YELLOW], 'Test 3 Failed: moveArray(-1) did not rotate right correctly.'
 
         # Resetting position for the next test
         builder.pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
@@ -80,7 +80,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         # Test 4: Move array right by 2
         builder.move_pos(-2)
         assert builder.pos == [CubeColor.YELLOW, CubeColor.BLUE, CubeColor.NONE,
-                               CubeColor.RED], "Test 4 Failed: moveArray(-2) did not rotate right twice correctly."
+                               CubeColor.RED], 'Test 4 Failed: moveArray(-2) did not rotate right twice correctly.'
 
         # Additional test cases can be added as needed to thoroughly test all edge cases and behaviors.
 

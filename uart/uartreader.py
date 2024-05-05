@@ -40,12 +40,12 @@ class UartReader:
 
     def decoder(self, received_data):
         if len(received_data) != 23:
-            print("Incomplete data received")
+            print('Incomplete data received')
             return None
 
         preamble = received_data[:4]
         if preamble != b'AAAB':
-            print("Invalid preamble")
+            print('Invalid preamble')
             return None
 
         message_data = received_data[4:]
@@ -54,33 +54,36 @@ class UartReader:
 
         # Access the union data safely
         if command_type == Command.ACKNOWLEDGE:
-            print("Acknowledged")
+            print('Acknowledged')
         elif command_type == Command.NOT_ACKNOWLEDGE:
-            print("Not Acknowledged")
+            print('Not Acknowledged')
         elif command_type == Command.CRC_ERROR:
-            print("CRC Error")
+            print('CRC Error')
         elif command_type == Command.ROTATE_GRID:
             rotate_data = message.dataUnion.cmdRotateGrid
-            print(f"Rotate Grid: {rotate_data.degrees_h} degrees high, {rotate_data.degrees_l} degrees low")
+            print(f'Rotate Grid: {rotate_data.degrees_h} degrees high, {rotate_data.degrees_l} degrees low')
         elif command_type == Command.PLACE_CUBES:
             place_data = message.dataUnion.cmdPlaceCubes
-            print(
-                f"Place Cubes: Red {place_data.cubes_red}, Yellow {place_data.cubes_yellow}, Blue {place_data.cubes_blue}")
+            print(f'Place Cubes: Red {place_data.cubes_red}, '
+                  f'Yellow {place_data.cubes_yellow}, '
+                  f'Blue {place_data.cubes_blue}')
         elif command_type == Command.MOVE_LIFT:
             move_data = message.dataUnion.cmdMoveLift
-            move_direction = "Up" if move_data == CmdMoveLift.MOVE_UP.value else "Down"
-            print(f"Move Lift: {move_direction}")
+            move_direction = 'Up' if move_data == CmdMoveLift.MOVE_UP.value else 'Down'
+            print(f'Move Lift: {move_direction}')
         elif command_type == Command.GET_STATE:
-            print("Get State Command")
+            print('Get State Command')
         elif command_type == Command.SEND_STATE:
             state_data = message.dataUnion.cmdSendState
-            print(
-                f"State Data: dummy1 {state_data.dummy1}, dummy2 {state_data.dummy2}, dummy3 {state_data.dummy3}, dummy4 {state_data.dummy4}")
+            print(f'State Data: dummy1 {state_data.dummy1}, '
+                  f'dummy2 {state_data.dummy2}, '
+                  f'dummy3 {state_data.dummy3}, '
+                  f'dummy4 {state_data.dummy4}')
         elif command_type == Command.PAUSE_BUILD:
-            print("Pause Build Command")
+            print('Pause Build Command')
         elif command_type == Command.RESUME_BUILD:
-            print("Resume Build Command")
+            print('Resume Build Command')
         else:
-            print("Unknown Command")
+            print('Unknown Command')
 
         return message

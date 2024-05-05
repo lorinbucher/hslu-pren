@@ -138,8 +138,8 @@ class BuildAlgorithm:
 
 
 if __name__ == "__main__":
-    communicator = UartCommunicatorSpy()
-    builder = BuildAlgorithm(communicator)
+    test_communicator = UartCommunicatorSpy()
+    builder = BuildAlgorithm(test_communicator)
     builder.build()
 
     builder.set_config([CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE,
