@@ -46,19 +46,17 @@ class CubeConfiguration:
     positions 2-4 specify sectors on the turntable in the counterclockwise direction.
     The Positions 5-8 are those on the 2nd level, on top of the underlying cube.
     """
-    # pylint: disable=too-many-instance-attributes
-    pos1: CubeColor = CubeColor.UNKNOWN
-    pos2: CubeColor = CubeColor.UNKNOWN
-    pos3: CubeColor = CubeColor.UNKNOWN
-    pos4: CubeColor = CubeColor.UNKNOWN
-    pos5: CubeColor = CubeColor.UNKNOWN
-    pos6: CubeColor = CubeColor.UNKNOWN
-    pos7: CubeColor = CubeColor.UNKNOWN
-    pos8: CubeColor = CubeColor.UNKNOWN
+    config = [CubeColor.UNKNOWN for _ in range(8)]
+
+    def set_color(self, pos: int, color: CubeColor):
+        """Sets the color at the specified position, position starts at 1."""
+        if pos < 1 or pos > 8:
+            return
+        self.config[pos - 1] = color
 
     def to_dict(self) -> dict[str, str]:
         """Returns a dictionary containing the cube configuration."""
         data = {}
-        for field in fields(self):
-            data[field.name.removeprefix('pos')] = str(getattr(self, field.name))
+        for index, value in enumerate(self.config):
+            data[str(index + 1)] = str(value)
         return data

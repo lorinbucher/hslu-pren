@@ -1,5 +1,5 @@
 """Implements the Cube API."""
-import logging.config
+import logging
 from datetime import datetime
 from typing import Any
 
