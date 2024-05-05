@@ -17,6 +17,6 @@ class DanceMode:
             self.communicator.write_uart(CommandBuilder().move_lift(CmdMoveLift.MOVE_UP))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     dancer = DanceMode()
     dancer.dance()

@@ -137,7 +137,7 @@ class BuildAlgorithm:
         return a
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     test_communicator = UartCommunicatorSpy()
     builder = BuildAlgorithm(test_communicator)
     builder.build()

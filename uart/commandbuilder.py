@@ -17,9 +17,9 @@ class CommandBuilder:
         cmd.id = self.generate_id()
         rotate = CmdRotateGrid()
         rotate.degrees = degrees
-        union.cmdRotateGrid = rotate
+        union.cmd_rotate_grid = rotate
         cmd.cmd = Command.ROTATE_GRID.value
-        cmd.dataUnion = union
+        cmd.data_union = union
         return cmd
 
     def rotate_grid_efficient(self, degrees):
@@ -37,9 +37,9 @@ class CommandBuilder:
         place.cubes_red = red
         place.cubes_yellow = yellow
         place.cubes_blue = blue
-        union.cmdPlaceCubes = place
+        union.cmd_place_cubes = place
         cmd.cmd = Command.PLACE_CUBES.value
-        cmd.dataUnion = union
+        cmd.data_union = union
         return cmd
 
     def move_lift(self, state):
@@ -47,9 +47,9 @@ class CommandBuilder:
         cmd = Message()
         cmd.checksum = 12
         cmd.id = self.generate_id()
-        union.cmdMoveLift = state.value
+        union.cmd_move_lift = state.value
         cmd.cmd = Command.MOVE_LIFT.value
-        cmd.dataUnion = union
+        cmd.data_union = union
         return cmd
 
     def send_state(self, dummy1, dummy2, dummy3, dummy4):
@@ -63,8 +63,8 @@ class CommandBuilder:
         state.dummy2 = dummy2
         state.dummy3 = dummy3
         state.dummy4 = dummy4
-        union.cmdSendState = state
-        cmd.dataUnion = union
+        union.cmd_send_state = state
+        cmd.data_union = union
         return cmd
 
     def other_commands(self, command):
@@ -73,5 +73,5 @@ class CommandBuilder:
         cmd.checksum = 12
         cmd.id = self.generate_id()
         cmd.cmd = command.value
-        cmd.dataUnion = union
+        cmd.data_union = union
         return cmd
