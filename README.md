@@ -36,7 +36,10 @@ rtsp_address = "<ip_address>"
 [rtsp]
 user = "pren"
 password = "<password>"
-profile = "<pren_profile_small|pren_profile_med>" 
+profile = "<pren_profile_small|pren_profile_med>"
+
+[app]
+confidence = 100
 ```
 
 ## Deployment

@@ -17,6 +17,8 @@ class AppConfiguration:
     rtsp_password: str = ''
     rtsp_profile: str = ''
 
+    app_confidence: int = 0
+
     def from_dict(self, data: dict) -> None:
         """Reads the app configuration from a dictionary."""
         self.auth_team_nr = data.get('auth', {}).get('team_nr', '')
@@ -29,10 +31,17 @@ class AppConfiguration:
         self.rtsp_password = data.get('rtsp', {}).get('password', '')
         self.rtsp_profile = data.get('rtsp', {}).get('profile', '')
 
+        self.app_confidence = data.get('app', {}).get('confidence', 0)
+
     def validate(self) -> tuple[bool, str]:
         """Validates the configuration of the application."""
         for key, value in self.__dict__.items():
-            if not isinstance(value, str) or not value.strip():
+            if key == 'app_confidence':
+                result = isinstance(value, int) and value > 0
+            else:
+                result = isinstance(value, str) and bool(value.strip())
+
+            if not result:
                 return False, key.replace('_', '.', 1)
         return True, ''
 
