@@ -20,25 +20,25 @@ class Command(Enum):
     PRIME_MAGAZINE = 11
 
 
-class CmdRotateGrid(Structure):
+class RotateGrid(Structure):
     """The data payload of the rotate grid command."""
     _fields_ = [('degrees', c_int16)]
 
 
-class CmdPlaceCubes(Structure):
+class PlaceCubes(Structure):
     """The data payload of the place cubes command."""
     _fields_ = [('cubes_red', c_uint8),
                 ('cubes_yellow', c_uint8),
                 ('cubes_blue', c_uint8)]
 
 
-class CmdMoveLift(Enum):
+class MoveLift(Enum):
     """The data payload of the move lift command."""
     MOVE_UP = 0
     MOVE_DOWN = 1
 
 
-class CmdSendState(Structure):
+class SendState(Structure):
     """The data payload of the send state command."""
     _fields_ = [('dummy1', c_uint8),
                 ('dummy2', c_uint8),
@@ -48,10 +48,10 @@ class CmdSendState(Structure):
 
 class DataUnion(Union):
     """The data payload for the UART message."""
-    _fields_ = [('cmd_rotate_grid', CmdRotateGrid),
-                ('cmd_place_cubes', CmdPlaceCubes),
+    _fields_ = [('cmd_rotate_grid', RotateGrid),
+                ('cmd_place_cubes', PlaceCubes),
                 ('cmd_move_lift', c_uint8),
-                ('cmd_send_state', CmdSendState),
+                ('cmd_send_state', SendState),
                 ('data_field', c_uint8 * 16)]
 
 

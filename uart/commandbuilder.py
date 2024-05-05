@@ -1,5 +1,5 @@
 """Helper classes to build the commands for the UART communication protocol."""
-from .command import Command, CmdRotateGrid, CmdPlaceCubes, DataUnion, Message, CmdSendState
+from .command import Command, RotateGrid, PlaceCubes, DataUnion, Message, SendState
 
 
 class CommandBuilder:
@@ -15,7 +15,7 @@ class CommandBuilder:
         cmd = Message()
         cmd.checksum = 12
         cmd.id = self.generate_id()
-        rotate = CmdRotateGrid()
+        rotate = RotateGrid()
         rotate.degrees = degrees
         union.cmd_rotate_grid = rotate
         cmd.cmd = Command.ROTATE_GRID.value
@@ -33,7 +33,7 @@ class CommandBuilder:
         cmd = Message()
         cmd.checksum = 12
         cmd.id = self.generate_id()
-        place = CmdPlaceCubes()
+        place = PlaceCubes()
         place.cubes_red = red
         place.cubes_yellow = yellow
         place.cubes_blue = blue
@@ -58,7 +58,7 @@ class CommandBuilder:
         cmd.checksum = 12
         cmd.id = self.generate_id()
         cmd.cmd = Command.SEND_STATE.value
-        state = CmdSendState()
+        state = SendState()
         state.dummy1 = dummy1
         state.dummy2 = dummy2
         state.dummy3 = dummy3

@@ -1,5 +1,5 @@
 """Implements a simulation of the UART communication for the unit tests."""
-from uart.command import Command, CmdMoveLift
+from uart.command import Command, MoveLift
 
 
 class UartCommunicatorSpy:
@@ -25,7 +25,7 @@ class UartCommunicatorSpy:
                        f'Yellow: {cmd.data_union.cmd_place_cubes.cubes_yellow}, '
                        f'Blue: {cmd.data_union.cmd_place_cubes.cubes_blue}')
         elif cmd.cmd == Command.MOVE_LIFT.value:
-            move_direction = 'Up' if cmd.data_union.cmd_move_lift == CmdMoveLift.MOVE_UP.value else 'Down'
+            move_direction = 'Up' if cmd.data_union.cmd_move_lift == MoveLift.MOVE_UP.value else 'Down'
             result += f'Move Lift Direction: {move_direction}'
         elif cmd.cmd == Command.SEND_STATE.value:
             result += 'Send State Data:'

@@ -5,7 +5,7 @@ from time import sleep
 
 import serial
 
-from .command import Command, CmdMoveLift, Message
+from .command import Command, MoveLift, Message
 
 
 class UartReader:
@@ -69,7 +69,7 @@ class UartReader:
                   f'Blue {place_data.cubes_blue}')
         elif command_type == Command.MOVE_LIFT:
             move_data = message.dataUnion.cmdMoveLift
-            move_direction = 'Up' if move_data == CmdMoveLift.MOVE_UP.value else 'Down'
+            move_direction = 'Up' if move_data == MoveLift.MOVE_UP.value else 'Down'
             print(f'Move Lift: {move_direction}')
         elif command_type == Command.GET_STATE:
             print('Get State Command')

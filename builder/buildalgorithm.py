@@ -1,6 +1,6 @@
 """Implements the build algorithm."""
 from shared.enumerations import CubeColor
-from uart.command import CmdMoveLift
+from uart.command import MoveLift
 from uart.commandbuilder import CommandBuilder
 
 from .layer import Layer
@@ -26,7 +26,7 @@ class BuildAlgorithm:
 
     def build(self):
         self.build_layer(Layer.BOTTOM)
-        self.communicator.write_uart(CommandBuilder().move_lift(CmdMoveLift.MOVE_DOWN))
+        self.communicator.write_uart(CommandBuilder().move_lift(MoveLift.MOVE_DOWN))
         self.build_layer(Layer.TOP)
         self.placed = [False] * len(self.placed)
 

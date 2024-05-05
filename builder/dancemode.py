@@ -1,5 +1,5 @@
 """Implements a special dance mode."""
-from uart.command import CmdMoveLift
+from uart.command import MoveLift
 from uart.commandbuilder import CommandBuilder
 
 from .uartcommunicatorspy import UartCommunicatorSpy
@@ -12,9 +12,9 @@ class DanceMode:
 
     def dance(self):
         while True:
-            self.communicator.write_uart(CommandBuilder().move_lift(CmdMoveLift.MOVE_DOWN))
+            self.communicator.write_uart(CommandBuilder().move_lift(MoveLift.MOVE_DOWN))
             self.communicator.write_uart(CommandBuilder().rotate_grid(100))
-            self.communicator.write_uart(CommandBuilder().move_lift(CmdMoveLift.MOVE_UP))
+            self.communicator.write_uart(CommandBuilder().move_lift(MoveLift.MOVE_UP))
 
 
 if __name__ == '__main__':
