@@ -1,5 +1,5 @@
 """Shared data classes that are used in different parts of the application."""
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 
 from shared.enumerations import CubeColor
 
