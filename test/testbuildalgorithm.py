@@ -161,7 +161,3 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertEqual([True, True, True, True, True, True, True, True], builder.placed)
         self.assertTrue(builder.full_placed_check(Layer.TOP))
         self.assertTrue(builder.full_placed_check(Layer.BOTTOM))
-
-
-if __name__ == '__main__':
-    unittest.main()

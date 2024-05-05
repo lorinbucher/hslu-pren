@@ -71,11 +71,9 @@ class BuildAlgorithm:
                     c[i] = True
         return c
 
-    def array_false_check(self, array):
-        for i in range(len(array)):
-            if array[i]:
-                return False
-        return True
+    @staticmethod
+    def array_false_check(array):
+        return not any(array)
 
     def place_cubes(self, conf):
         c = conf
@@ -97,25 +95,26 @@ class BuildAlgorithm:
 
     def rotate_times(self, times):
         if times != 0:
-            anlge = times * 90
-            self.communicator.write_uart(CommandBuilder().rotate_grid_efficient(anlge))
+            angle = times * 90
+            self.communicator.write_uart(CommandBuilder().rotate_grid_efficient(angle))
             self.move_pos(times)
 
     def rotate_times_no_array_movement(self, times):
         if times != 0:
-            anlge = times * 90
-            self.communicator.write_uart(CommandBuilder().rotate_grid_efficient(anlge))
+            angle = times * 90
+            self.communicator.write_uart(CommandBuilder().rotate_grid_efficient(angle))
 
     def move_pos(self, times):
         if times > 0:
             self.pos = BuildAlgorithm.move_array_left(self.pos, times)
         elif times < 0:
-            timesabs = abs(times)
-            self.pos = BuildAlgorithm.move_array_right(self.pos, timesabs)
+            times_abs = abs(times)
+            self.pos = BuildAlgorithm.move_array_right(self.pos, times_abs)
         else:
             self.pos = self.pos
 
-    def move_array_left(self, array, times):
+    @staticmethod
+    def move_array_left(array, times):
         a = array[:]
         for _ in range(times):
             cache = a[0]
@@ -124,7 +123,8 @@ class BuildAlgorithm:
             a[len(a) - 1] = cache
         return a
 
-    def move_array_right(self, array, times):
+    @staticmethod
+    def move_array_right(array, times):
         a = array[:]
         for _ in range(times):
             cache = a[len(a) - 1]
