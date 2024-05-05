@@ -53,3 +53,17 @@ source venv/bin/activate
 mypy .
 pylint . --recursive=yes --verbose
 ```
+
+## Run Unittests
+
+The metods have to be called test or else they wont run after this command
+
+```shell
+python3 -m test.testbuildalgorithm
+```
+
+## Run one Class
+
+```shell
+python3 -m builder.buildalgorithm
+```

@@ -1,7 +1,9 @@
 # App libraries
 requests==2.31.0
+pyserial==3.5
 
 # Linting
 mypy
 pylint
+types-pyserial
 types-requests
