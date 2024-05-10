@@ -4,7 +4,7 @@ from uart.command import MoveLift
 from uart.commandbuilder import CommandBuilder
 
 from .layer import Layer
-from .uartcommunicatorspy import UartCommunicatorSpy
+from .communicatorspy import UartCommunicatorSpy
 
 
 class BuildAlgorithm:
@@ -26,7 +26,7 @@ class BuildAlgorithm:
 
     def build(self):
         self.build_layer(Layer.BOTTOM)
-        self.communicator.write_uart(CommandBuilder().move_lift(MoveLift.MOVE_DOWN))
+        self.communicator.write_uart(CommandBuilder.move_lift(MoveLift.MOVE_DOWN))
         self.build_layer(Layer.TOP)
         self.placed = [False] * len(self.placed)
 
@@ -92,20 +92,20 @@ class BuildAlgorithm:
                 elif self.pos[i] == CubeColor.BLUE:
                     blue = 1
         if red + blue + yellow > 0:
-            self.communicator.write_uart(CommandBuilder().place_cubes(red, yellow, blue))
+            self.communicator.write_uart(CommandBuilder.place_cubes(red, yellow, blue))
 
     # Folgende Methoden sind super getestet
 
     def rotate_times(self, times):
         if times != 0:
             angle = times * 90
-            self.communicator.write_uart(CommandBuilder().rotate_grid_efficient(angle))
+            self.communicator.write_uart(CommandBuilder.rotate_grid_efficient(angle))
             self.move_pos(times)
 
     def rotate_times_no_array_movement(self, times):
         if times != 0:
             angle = times * 90
-            self.communicator.write_uart(CommandBuilder().rotate_grid_efficient(angle))
+            self.communicator.write_uart(CommandBuilder.rotate_grid_efficient(angle))
 
     def move_pos(self, times):
         if times > 0:
@@ -135,13 +135,3 @@ class BuildAlgorithm:
                 a[len(a) - i - 1] = a[len(a) - i - 2]
             a[0] = cache
         return a
-
-
-if __name__ == '__main__':
-    test_communicator = UartCommunicatorSpy()
-    builder = BuildAlgorithm(test_communicator)
-    builder.build()
-
-    builder.set_config([CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE,
-                        CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE, CubeColor.BLUE])
-    builder.build()

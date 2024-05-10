@@ -3,7 +3,7 @@ import unittest
 
 from builder.buildalgorithm import BuildAlgorithm
 from builder.layer import Layer
-from builder.uartcommunicatorspy import UartCommunicatorSpy
+from builder.communicatorspy import UartCommunicatorSpy
 from shared.enumerations import CubeColor
 
 
