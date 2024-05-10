@@ -40,6 +40,8 @@ profile = "<pren_profile_small|pren_profile_med>"
 
 [app]
 confidence = 100
+serial_read = "/dev/ttyAMA10"
+serial_write = "/dev/ttyAMA10"
 ```
 
 ## Deployment

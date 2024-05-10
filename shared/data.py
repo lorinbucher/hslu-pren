@@ -18,6 +18,8 @@ class AppConfiguration:
     rtsp_profile: str = ''
 
     app_confidence: int = 0
+    serial_read: str = ''
+    serial_write: str = ''
 
     def from_dict(self, data: dict) -> None:
         """Reads the app configuration from a dictionary."""
@@ -32,6 +34,8 @@ class AppConfiguration:
         self.rtsp_profile = data.get('rtsp', {}).get('profile', '')
 
         self.app_confidence = data.get('app', {}).get('confidence', 0)
+        self.serial_read = data.get('app', {}).get('serial_read', '')
+        self.serial_write = data.get('app', {}).get('serial_write', '')
 
     def validate(self) -> tuple[bool, str]:
         """Validates the configuration of the application."""
