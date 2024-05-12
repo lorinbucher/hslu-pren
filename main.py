@@ -1,8 +1,9 @@
 """The main application of the 3D Re-Builder."""
 import logging.config
+import signal
 import sys
 import tomllib
-from multiprocessing import Pipe
+from multiprocessing import SimpleQueue
 
 import shared.config as app_config
 from shared.data import AppConfiguration
@@ -37,29 +38,34 @@ def _validate_config(conf: AppConfiguration) -> None:
         sys.exit(1)
 
 
+def _signal_handler(signum, _):
+    """Handles signals to gracefully stop the application."""
+    if signum in (signal.SIGINT, signal.SIGTERM):
+        recognition_manager.terminate_signal()
+
+
 if __name__ == '__main__':
     logging.config.dictConfig(app_config.logging_config)
 
+    # Parse configuration file
     config = AppConfiguration()
     config.from_dict(_parse_config())
     _validate_config(config)
 
-    # TODO (lorin): start builder task
-    # TODO (lorin): start recognition manager
-    # TODO (lorin): start web server to serve the user interface
-    # TODO (lorin): start UART listener task
+    # Handle signals
+    signal.signal(signal.SIGINT, _signal_handler)
+    signal.signal(signal.SIGTERM, _signal_handler)
 
-    # TODO (lorin): on start signal received, flush processing queue or not depending on rules, send request
-    # TODO (lorin): on sube detected, send configuration to builder task
-    # TODO (lorin): on detection finished, stop recognition task, send config request (maybe from video.manager)
+    # uart_read = SimpleQueue()
+    # uart_write = SimpleQueue()
+    # uart_communicator = UartCommunicator(config, uart_read, uart_write)
 
-    config_conn_recv, config_conn_send = Pipe(duplex=False)
-    recognition_manager = RecognitionManager(config, config_conn_send)
-    recognition_manager.clear_queue()
+    builder_queue: SimpleQueue = SimpleQueue()
+    recognition_manager = RecognitionManager(config, builder_queue)
     recognition_manager.start()
     recognition_manager.join()
+    recognition_manager.stop()
 
     # Temporary for testing
-    if config_conn_recv.poll():
-        data = config_conn_recv.recv()
-        logging.info('Detected cube configuration: %s', data.to_dict())
+    data = builder_queue.get()
+    logging.info('Detected cube configuration: %s', data.to_dict())
