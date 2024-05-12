@@ -13,7 +13,7 @@ class RecognitionManager:
     def __init__(self, app_config: AppConfiguration, builder_queue: Queue):
         self._logger = logging.getLogger('video.manager')
         self._terminate = Event()
-        self._process_queue: Queue = Queue(maxsize=100)
+        self._process_queue: Queue = Queue(maxsize=25)
         self._stream_processing = StreamProcessing(app_config, self._terminate, self._process_queue)
         self._cube_recognition = CubeRecognition(app_config, self._terminate, builder_queue, self._process_queue)
 
