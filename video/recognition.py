@@ -58,4 +58,5 @@ class CubeRecognition:
                 self._logger.warning('Video stream processing queue is empty')
 
         self._builder_queue.put(self._cube_config)
+        self._terminate.set()
         self._logger.info('Cube image recognition process stopped')
