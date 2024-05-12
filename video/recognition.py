@@ -49,14 +49,14 @@ class CubeRecognition:
         """Runs the cube image recognition process."""
         self._logger.info('Cube image recognition process started')
         counter = 0
-        while not self._terminate.is_set() or self._cube_config.completed():
+        while not self._terminate.is_set() and not self._cube_config.completed():
             try:
-                data = self._process_queue.get(block=True)
+                data = self._process_queue.get(block=True, timeout=5)
                 self._logger.debug('Received data from video processing: %s', data)
                 self._cube_config.set_color(counter, CubeColor.NONE)
                 counter += 1
             except queue.Empty:
-                self._logger.error('Video stream processing queue is empty')
+                self._logger.warning('Video stream processing queue is empty')
 
         self._builder_queue.put(self._cube_config)
         self._logger.info('Cube image recognition process stopped')

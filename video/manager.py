@@ -19,25 +19,25 @@ class RecognitionManager:
 
     def start(self) -> None:
         """Starts the video stream processing and cube image recognition tasks."""
-        self._logger.info('Starting tasks')
+        self._logger.info('Starting recognition tasks')
         self._terminate.clear()
         self._stream_processing.start()
         self._cube_recognition.start()
-        self._logger.info('Tasks started')
+        self._logger.info('Recognition tasks started')
 
     def join(self) -> None:
         """Waits for the video stream processing and cube image recognition tasks to complete."""
-        self._logger.info('Waiting for tasks to complete')
+        self._logger.info('Waiting for recognition tasks to complete')
         self._stream_processing.join()
         self._cube_recognition.join()
-        self._logger.info('Tasks completed')
+        self._logger.info('Recognition tasks completed')
 
     def stop(self) -> None:
         """Stops the video stream processing and cube image recognition tasks."""
-        self._logger.info('Stopping tasks')
+        self._logger.info('Stopping recognition tasks')
         self._stream_processing.stop()
         self._cube_recognition.stop()
-        self._logger.info('Tasks stopped')
+        self._logger.info('Recognition tasks stopped')
 
     def terminate_signal(self) -> None:
         """Sends the terminate event to the stream processing and cube image recognition tasks."""
