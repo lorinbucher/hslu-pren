@@ -49,7 +49,7 @@ class UartWriter:
         self._logger.info('UART writer process started')
         while not self._terminate.is_set():
             try:
-                message = self._write_queue.get(timeout=5.0)
+                message = self._write_queue.get(timeout=2.0)
                 if not isinstance(message, Message):
                     self._logger.warning('Invalid message type: %s', type(message))
                     continue
