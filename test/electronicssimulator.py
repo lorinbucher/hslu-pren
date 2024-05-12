@@ -30,20 +30,24 @@ class ElectronicsSimulator:
         self._write(command)
 
     def get_state(self) -> None:
-        """Sends a checksum error message."""
+        """Sends a get state message."""
         command = CommandBuilder.other_command(Command.GET_STATE)
         self._write(command)
 
     def send_state(self) -> None:
-        """Sends a checksum error message."""
+        """Sends a send state message."""
         command = CommandBuilder.other_command(Command.SEND_STATE)
         self._write(command)
+
+    def disturb(self, data: bytes) -> None:
+        """Sends random data to disturb"""
+        self._write(data)
 
     def simulate(self) -> None:
         """Simulates responses from the electronics controller."""
         while True:
             self._read()
-            command = int(input('1 ack, 2 nack, 3 crc, 7 get state, 8 send state: '))
+            command = int(input('1 ack, 2 nack, 3 crc, 7 get state, 8 send state, 9 disturb: '))
             if command == 1:
                 self.acknowledge()
             elif command == 2:
@@ -54,6 +58,9 @@ class ElectronicsSimulator:
                 self.get_state()
             elif command == 8:
                 self.send_state()
+            elif command == 9:
+                data = input('data: ')
+                self._write(data.encode('utf-8'))
             else:
                 sys.exit(0)
 
@@ -72,10 +79,13 @@ class ElectronicsSimulator:
         message = Message.from_buffer_copy(message_data)
         print(Command(message.cmd))
 
-    def _write(self, command) -> None:
+    def _write(self, command: Message | bytes) -> None:
         """Writes the command to the UART connection."""
         ser = serial.Serial(self._write_port, 115200)
-        ser.write(b'AAAB' + command)
+        if isinstance(command, Message):
+            ser.write(b'AAAB' + command)
+        else:
+            ser.write(command)
 
 
 if __name__ == '__main__':

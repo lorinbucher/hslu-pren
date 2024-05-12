@@ -46,12 +46,20 @@ class UartReader:
     def _run(self) -> None:
         """Runs the UART reader process."""
         self._logger.info('UART reader process started')
-
+        data = b''
         while not self._terminate.is_set():
-            data = self._read()
-            if not data:
+            data += self._read()
+            preamble_pos = data.find(b'AAAB')
+            if preamble_pos < 0:
+                data = b''
                 continue
-            self._decode(data)
+
+            data = data[preamble_pos:]
+            if len(data) >= 23:
+                if self._decode(data[:23]):
+                    data = data[23:]
+                else:
+                    data = data[4:]
 
         if self._ser is not None and self._ser.is_open:
             self._ser.close()
@@ -62,7 +70,7 @@ class UartReader:
         try:
             if self._ser is None:
                 self._logger.info('Opening UART read connection')
-                self._ser = serial.Serial(self._port, 115200, timeout=5.0)
+                self._ser = serial.Serial(self._port, 115200, timeout=2.0)
             if self._ser.is_open:
                 return self._ser.read(23)
         except (SerialException, SerialTimeoutException, ValueError) as error:
@@ -70,21 +78,21 @@ class UartReader:
             self._ser = None
         return bytes()
 
-    def _decode(self, data: bytes) -> None:
+    def _decode(self, data: bytes) -> bool:
         """Decodes the message from the received data."""
-        preamble = data[:4]
-        if preamble != b'AAAB':
-            self._logger.warning('Invalid preamble')
-            return None
+        try:
+            message_data = data[4:]
+            message = Message.from_buffer_copy(message_data)
+            command_type = Command(message.cmd)
 
-        message_data = data[4:]
-        message = Message.from_buffer_copy(message_data)
-        command_type = Command(message.cmd)
-
-        self._logger.debug('Received command: %s', command_type)
-        if command_type in (Command.ACKNOWLEDGE, Command.NOT_ACKNOWLEDGE, Command.CRC_ERROR):
-            self._ack_queue.put(message)
-        elif command_type == Command.SEND_STATE:
-            self._read_queue.put(message)
-        else:
-            self._logger.info('Unhandled command received: %s', command_type)
+            self._logger.debug('Received command: %s', command_type)
+            if command_type in (Command.ACKNOWLEDGE, Command.NOT_ACKNOWLEDGE, Command.CRC_ERROR):
+                self._ack_queue.put(message)
+            elif command_type == Command.SEND_STATE:
+                self._read_queue.put(message)
+            else:
+                self._logger.info('Unhandled command received: %s', command_type)
+            return True
+        except ValueError as error:
+            self._logger.warning('Invalid message received: %s', error)
+        return False
