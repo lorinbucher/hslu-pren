@@ -1,34 +1,44 @@
 """Implements the UART communication protocol."""
 import logging
-from time import sleep
+from multiprocessing import Event, Queue
 
 from shared.data import AppConfiguration
-
-from .command import Command, Message
 from .reader import UartReader
 from .writer import UartWriter
 
 
 class UartCommunicator:
-    """Communicates with the electronics controller using the UART communication protocol."""
+    """Manages the communication with the electronics controller using the UART communication protocol."""
 
-    def __init__(self, app_config: AppConfiguration):
+    def __init__(self, app_config: AppConfiguration, read_queue: Queue, write_queue: Queue):
         self._logger = logging.getLogger('uart.communicator')
-        self._reader = UartReader(app_config.serial_read)
-        self._writer = UartWriter(app_config.serial_write)
+        self._terminate = Event()
+        self._ack_queue: Queue = Queue()
+        self._reader = UartReader(app_config.serial_read, self._terminate, self._ack_queue, read_queue)
+        self._writer = UartWriter(app_config.serial_write, self._terminate, self._ack_queue, write_queue)
 
-    def read_acknowledge(self) -> bool:
-        """Checks if the command has been acknowledged."""
-        while not self._reader.is_empty():
-            command = self._reader.get_from_queue()
-            action = Command(command.cmd)
-            if action == Command.ACKNOWLEDGE or action == Command.NOT_ACKNOWLEDGE:
-                return True
-        return False
+    def start(self) -> None:
+        """Starts the UART reader and writer tasks."""
+        self._logger.info('Starting UART tasks')
+        self._terminate.clear()
+        self._reader.start()
+        self._writer.start()
+        self._logger.info('UART tasks started')
 
-    def write_uart(self, cmd: Message) -> None:
-        """Writes a command to the UART interface."""
-        self._reader.empty_queue()
-        while not self.read_acknowledge():
-            self._writer.write(cmd)
-            sleep(1.0)
+    def join(self) -> None:
+        """Waits for UART reader and writer tasks to complete."""
+        self._logger.info('Waiting for UART tasks to complete')
+        self._reader.join()
+        self._writer.join()
+        self._logger.info('UART tasks completed')
+
+    def stop(self) -> None:
+        """Stops the UART reader and writer tasks."""
+        self._logger.info('Stopping UART tasks')
+        self._reader.stop()
+        self._writer.stop()
+        self._logger.info('UART tasks stopped')
+
+    def terminate_signal(self) -> None:
+        """Sends the terminate event to the UART reader and writer tasks."""
+        self._terminate.set()

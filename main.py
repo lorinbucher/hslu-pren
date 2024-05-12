@@ -7,6 +7,7 @@ from multiprocessing import Queue
 
 import shared.config as app_config
 from shared.data import AppConfiguration
+from uart.communicator import UartCommunicator
 from video.manager import RecognitionManager
 
 CONFIG_FILE = 'config.toml'
@@ -41,6 +42,7 @@ def _validate_config(conf: AppConfiguration) -> None:
 def _signal_handler(signum, _):
     """Handles signals to gracefully stop the application."""
     if signum in (signal.SIGINT, signal.SIGTERM):
+        uart_communicator.terminate_signal()
         recognition_manager.terminate_signal()
 
 
@@ -56,10 +58,25 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, _signal_handler)
     signal.signal(signal.SIGTERM, _signal_handler)
 
+    # Initialize messaging queues
     builder_queue: Queue = Queue()
+    uart_read: Queue = Queue()
+    uart_write: Queue = Queue()
+
+    # Initialize processes
+    uart_communicator = UartCommunicator(config, uart_read, uart_write)
     recognition_manager = RecognitionManager(config, builder_queue)
+
+    # Start processes
+    uart_communicator.start()
     recognition_manager.start()
+
+    # Wait for processes to complete
+    uart_communicator.join()
     recognition_manager.join()
+
+    # Stop processes
+    uart_communicator.stop()
     recognition_manager.stop()
 
     # Temporary for testing

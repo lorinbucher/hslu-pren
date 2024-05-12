@@ -1,10 +1,10 @@
 """Implements the reader for the UART communication protocol."""
 import logging
-import threading
-import time
-from queue import Queue
+from multiprocessing import Process, Queue
+from multiprocessing.synchronize import Event
 
 import serial
+from serial.serialutil import SerialException, SerialTimeoutException
 
 from .command import Command, Message
 
@@ -12,60 +12,79 @@ from .command import Command, Message
 class UartReader:
     """Reads data from the UART interface."""
 
-    def __init__(self, port: str) -> None:
+    def __init__(self, port: str, terminate: Event, ack_queue: Queue, read_queue: Queue) -> None:
         self._logger = logging.getLogger('uart.reader')
         self._port = port
-        self._commands: Queue = Queue()
-        thread_reader = threading.Thread(target=self.read)
-        thread_reader.start()
+        self._terminate = terminate
+        self._ack_queue = ack_queue
+        self._read_queue = read_queue
+        self._process: Process | None = None
+        self._ser: serial.Serial | None = None
 
-    def empty_queue(self) -> None:
-        """Clears the queue."""
-        while not self._commands.empty():
-            self._commands.get()
+    def start(self) -> None:
+        """Starts the UART reader."""
+        self._logger.info('Starting UART reader')
+        self._process = Process(target=self._run)
+        self._process.start()
+        self._logger.info('UART reader started')
 
-    def is_empty(self) -> bool:
-        """Returns true if the queue is empty."""
-        return self._commands.empty()
+    def join(self) -> None:
+        """Waits for the UART reader to complete."""
+        if self._process is not None:
+            self._logger.info('Waiting for UART reader to complete')
+            self._process.join()
+            self._logger.info('UART reader completed')
 
-    def get_from_queue(self) -> Message:
-        """Returns a message from the queue."""
-        return self._commands.get()
+    def stop(self) -> None:
+        """Stops the UART reader."""
+        if self._process is not None:
+            self._logger.info('Stopping UART reader')
+            self._process.close()
+            self._process = None
+            self._logger.info('UART reader stopped')
 
-    def read(self):
-        """Reads data received from UART."""
-        ser = serial.Serial(self._port, 115200)
-        while True:
-            received_data = ser.read()
-            time.sleep(0.03)
-            data_left = ser.in_waiting
-            received_data += ser.read(data_left)
-            command = self._decode(received_data)
-            if command is not None:
-                self._commands.put(command)
+    def _run(self) -> None:
+        """Runs the UART reader process."""
+        self._logger.info('UART reader process started')
 
-    def _decode(self, received_data):
+        while not self._terminate.is_set():
+            data = self._read()
+            if not data:
+                continue
+            self._decode(data)
+
+        if self._ser is not None and self._ser.is_open:
+            self._ser.close()
+        self._logger.info('UART reader process stopped')
+
+    def _read(self) -> bytes:
+        """Reads data received from the UART connection."""
+        try:
+            if self._ser is None:
+                self._logger.info('Opening UART read connection')
+                self._ser = serial.Serial(self._port, 115200, timeout=5.0)
+            if self._ser.is_open:
+                return self._ser.read(23)
+        except (SerialException, SerialTimeoutException, ValueError) as error:
+            self._logger.error('Failed to read message: %s', error)
+            self._ser = None
+        return bytes()
+
+    def _decode(self, data: bytes) -> None:
         """Decodes the message from the received data."""
-        if len(received_data) != 23:
-            self._logger.warning('Invalid length of data')
-            return None
-
-        preamble = received_data[:4]
+        preamble = data[:4]
         if preamble != b'AAAB':
-            self._logger.debug('Invalid preamble')
+            self._logger.warning('Invalid preamble')
             return None
 
-        message_data = received_data[4:]
+        message_data = data[4:]
         message = Message.from_buffer_copy(message_data)
         command_type = Command(message.cmd)
 
-        if command_type == Command.ACKNOWLEDGE:
-            self._logger.debug('Acknowledged')
-        elif command_type == Command.NOT_ACKNOWLEDGE:
-            self._logger.debug('Not Acknowledged')
-        elif command_type == Command.CRC_ERROR:
-            self._logger.debug('CRC Error')
+        self._logger.debug('Received command: %s', command_type)
+        if command_type in (Command.ACKNOWLEDGE, Command.NOT_ACKNOWLEDGE, Command.CRC_ERROR):
+            self._ack_queue.put(message)
+        elif command_type == Command.SEND_STATE:
+            self._read_queue.put(message)
         else:
-            self._logger.warning('Unhandled command: %s', command_type)
-
-        return message
+            self._logger.info('Unhandled command received: %s', command_type)

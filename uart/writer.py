@@ -1,50 +1,88 @@
 """Implements the writer for the UART communication protocol."""
 import logging
+import queue
+from multiprocessing import Process, Queue
+from multiprocessing.synchronize import Event
 
 import serial
 from serial.serialutil import SerialException, SerialTimeoutException
 
-from .command import Message
+from .command import Command, Message
 
 
 class UartWriter:
     """Writes data to the UART interface."""
 
-    def __init__(self, port: str) -> None:
+    def __init__(self, port: str, terminate: Event, ack_queue: Queue, write_queue: Queue) -> None:
         self._logger = logging.getLogger('uart.writer')
         self._port = port
+        self._terminate = terminate
+        self._ack_queue = ack_queue
+        self._write_queue = write_queue
+        self._process: Process | None = None
         self._ser: serial.Serial | None = None
 
-        self._open_connection()
+    def start(self) -> None:
+        """Starts the UART writer."""
+        self._logger.info('Starting UART writer')
+        self._process = Process(target=self._run)
+        self._process.start()
+        self._logger.info('UART writer started')
 
-    def write(self, command) -> int | None:
-        """Writes the command to the UART connection."""
-        if not self._open_connection():
-            self._logger.warning('UART connection is not opened')
-            return None
+    def join(self) -> None:
+        """Waits for the UART writer to complete."""
+        if self._process is not None:
+            self._logger.info('Waiting for UART writer to complete')
+            self._process.join()
+            self._logger.info('UART writer completed')
 
-        message = self._encode(command)
-        try:
-            self._logger.debug('Writing message: %s', message)
-            return self._ser.write(message) if self._ser is not None else None
-        except (SerialException, SerialTimeoutException) as error:
-            self._logger.error('Failed to write message: %s', error)
-            self._ser = None
-        return 0
+    def stop(self) -> None:
+        """Stops the UART writer."""
+        if self._process is not None:
+            self._logger.info('Stopping UART writer')
+            self._process.close()
+            self._process = None
+            self._logger.info('UART writer stopped')
 
-    def _open_connection(self) -> bool:
-        """Opens the UART connection."""
+    def _run(self) -> None:
+        """Runs the UART writer process."""
+        self._logger.info('UART writer process started')
+        while not self._terminate.is_set():
+            try:
+                message = self._write_queue.get(timeout=5.0)
+                if not isinstance(message, Message):
+                    self._logger.warning('Invalid message type: %s', type(message))
+                    continue
+                self._write(message)
+            except queue.Empty:
+                continue
+
         if self._ser is not None and self._ser.is_open:
-            return True
+            self._ser.close()
+        self._logger.info('UART writer process stopped')
 
-        self._logger.info('Opening UART write connection')
-        try:
-            self._ser = serial.Serial(self._port, 115200)
-            self._logger.info('UART write connection opened')
-            return True
-        except (SerialException, ValueError) as error:
-            self._logger.error('Failed to open UART write connection: %s', error)
-        return False
+    def _write(self, command) -> None:
+        """Writes the command to the UART connection."""
+        message = self._encode(command)
+        acknowledged = False
+        while not acknowledged and not self._terminate.is_set():
+            try:
+                self._logger.debug('Writing message: %s', message)
+                if self._ser is None:
+                    self._logger.info('Opening UART write connection')
+                    self._ser = serial.Serial(self._port, 115200)
+                if self._ser.is_open:
+                    self._ser.write(message)
+
+                ack_result = self._ack_queue.get(timeout=2.0)
+                self._logger.debug('Received acknowledge result: %s', ack_result.cmd)
+                if Command(ack_result.cmd) in (Command.ACKNOWLEDGE, Command.NOT_ACKNOWLEDGE):
+                    acknowledged = True
+            except (SerialException, SerialTimeoutException, ValueError) as error:
+                self._logger.error('Failed to write message: %s', error)
+                self._ser = None
+            except queue.Empty:
+                self._logger.warning('No acknowledge result received, retrying')
 
     @staticmethod
     def _encode(command: Message) -> bytes:
