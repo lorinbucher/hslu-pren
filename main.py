@@ -3,7 +3,7 @@ import logging.config
 import signal
 import sys
 import tomllib
-from multiprocessing import SimpleQueue
+from multiprocessing import Queue
 
 import shared.config as app_config
 from shared.data import AppConfiguration
@@ -56,11 +56,7 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, _signal_handler)
     signal.signal(signal.SIGTERM, _signal_handler)
 
-    # uart_read = SimpleQueue()
-    # uart_write = SimpleQueue()
-    # uart_communicator = UartCommunicator(config, uart_read, uart_write)
-
-    builder_queue: SimpleQueue = SimpleQueue()
+    builder_queue: Queue = Queue()
     recognition_manager = RecognitionManager(config, builder_queue)
     recognition_manager.start()
     recognition_manager.join()

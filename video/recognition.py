@@ -1,7 +1,7 @@
 """Implements the cube image recognition module."""
 import logging
 import queue
-from multiprocessing import Process, Queue, SimpleQueue
+from multiprocessing import Process, Queue
 from multiprocessing.synchronize import Event
 
 from shared.data import AppConfiguration, CubeConfiguration
@@ -11,8 +11,7 @@ from shared.enumerations import CubeColor
 class CubeRecognition:
     """Performs the cube image recognition."""
 
-    def __init__(self, app_config: AppConfiguration, terminate: Event,
-                 builder_queue: SimpleQueue, process_queue: Queue):
+    def __init__(self, app_config: AppConfiguration, terminate: Event, builder_queue: Queue, process_queue: Queue):
         self._logger = logging.getLogger('video.cube_recognition')
         self._app_config = app_config
         self._terminate = terminate
