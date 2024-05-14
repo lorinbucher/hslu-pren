@@ -1,5 +1,6 @@
 """Implements the reader for the UART communication protocol."""
 import logging
+import time
 from multiprocessing import Process, Queue
 from multiprocessing.synchronize import Event
 
@@ -76,6 +77,7 @@ class UartReader:
         except (SerialException, SerialTimeoutException, ValueError) as error:
             self._logger.error('Failed to read message: %s', error)
             self._ser = None
+            time.sleep(1)
         return bytes()
 
     def _decode(self, data: bytes) -> bool:

@@ -1,6 +1,7 @@
 """Implements the writer for the UART communication protocol."""
 import logging
 import queue
+import time
 from multiprocessing import Process, Queue
 from multiprocessing.synchronize import Event
 
@@ -81,6 +82,7 @@ class UartWriter:
             except (SerialException, SerialTimeoutException, ValueError) as error:
                 self._logger.error('Failed to write message: %s', error)
                 self._ser = None
+                time.sleep(1)
             except queue.Empty:
                 self._logger.warning('No acknowledge result received, retrying')
 
