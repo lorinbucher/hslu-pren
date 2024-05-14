@@ -1,13 +1,16 @@
 """The main application of the 3D Re-Builder."""
 import logging.config
+import queue
 import signal
 import sys
 import tomllib
 from multiprocessing import Queue
+from threading import Event
 
 import shared.config as app_config
 from builder.builder import Builder
 from shared.data import AppConfiguration
+from uart.command import Command
 from uart.communicator import UartCommunicator
 from video.manager import RecognitionManager
 
@@ -40,12 +43,28 @@ def _validate_config(conf: AppConfiguration) -> None:
         sys.exit(1)
 
 
-def _signal_handler(signum, _):
+def _signal_handler(signum, _) -> None:
     """Handles signals to gracefully stop the application."""
+    # pylint: disable=possibly-used-before-assignment
     if signum in (signal.SIGINT, signal.SIGTERM):
-        uart_communicator.terminate_signal()  # pylint: disable=possibly-used-before-assignment
-        recognition_manager.terminate_signal()  # pylint: disable=possibly-used-before-assignment
-        builder.terminate_signal()  # pylint: disable=possibly-used-before-assignment
+        uart_communicator.terminate_signal()
+        recognition_manager.terminate_signal()
+        builder.terminate_signal()
+        terminate.set()
+
+
+def _handle_uart_messages(terminate_signal: Event, recv_queue: Queue) -> None:
+    """Handles received UART messages."""
+    logger = logging.getLogger('main.messages')
+    logger.info('Starting UART message listener')
+    while not terminate_signal.is_set():
+        try:
+            message = recv_queue.get(timeout=2.0)
+            logger.debug('Received UART message: %s', Command(message.cmd))
+        except queue.Empty:
+            continue
+
+    logger.info('Stopping UART message listener')
 
 
 if __name__ == '__main__':
@@ -57,6 +76,7 @@ if __name__ == '__main__':
     _validate_config(config)
 
     # Handle signals
+    terminate = Event()
     signal.signal(signal.SIGINT, _signal_handler)
     signal.signal(signal.SIGTERM, _signal_handler)
 
@@ -77,7 +97,9 @@ if __name__ == '__main__':
 
     # TODO (lorin): start uart, video processing and web server from the beginning
     # TODO (lorin): start video recognition and builder after start signal received, reset in that case
-    # TODO (lorin): handle received uart messages
+
+    # Handle received UART messages
+    _handle_uart_messages(terminate, uart_read)
 
     # Wait for processes to complete
     uart_communicator.join()
