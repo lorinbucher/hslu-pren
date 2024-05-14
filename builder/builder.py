@@ -1,13 +1,19 @@
 """Implements the build algorithm."""
 import logging
 import queue
+from enum import Enum
 from multiprocessing import Event, Process, Queue
 
 from shared.data import CubeConfiguration
 from shared.enumerations import CubeColor
 from uart.command import MoveLift
 from uart.commandbuilder import CommandBuilder
-from .layer import Layer
+
+
+class Layer(Enum):
+    """The build lagers."""
+    BOTTOM = 0
+    TOP = 4
 
 
 class Builder:
@@ -19,11 +25,11 @@ class Builder:
         self._builder_queue = builder_queue
         self._uart_write = uart_write
 
-        self._pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
-        self._placed = [False, False, False, False, False, False, False, False]
+        self._process: Process | None = None
         self._config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED,
                         CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
-        self._process: Process | None = None
+        self._placed = [False, False, False, False, False, False, False, False]
+        self._pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
 
     def start(self) -> None:
         """Starts the builder."""
@@ -71,77 +77,65 @@ class Builder:
 
     def reset(self) -> None:
         """Resets the state of the builder."""
-        self._pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
-        self._placed = [False, False, False, False, False, False, False, False]
         self._config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED,
                         CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
-
-    @property
-    def pos(self) -> list[CubeColor]:
-        """Returns the current position"""
-        return self._pos.copy()
+        self._placed = [False, False, False, False, False, False, False, False]
+        self._pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
 
     @property
     def placed(self) -> list[bool]:
         """Returns the placed config"""
         return self._placed.copy()
 
-    def set_config(self, config):
-        self._config = config
+    @property
+    def pos(self) -> list[CubeColor]:
+        """Returns the current position"""
+        return self._pos.copy()
 
-    def build(self):
+    def build(self) -> None:
+        """Builds the bottom and top layer of the configuration."""
         self.build_layer(Layer.BOTTOM)
-        self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_DOWN))
         self.build_layer(Layer.TOP)
-        self._placed = [False] * len(self._placed)
+        self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_DOWN))
 
-    def build_layer(self, layer):
+    def build_layer(self, layer: Layer) -> None:
+        """Builds a layer."""
         while not self.full_placed_check(layer):
             config = self.match(layer)
             times = 0
-            while Builder.array_false_check(config):
+            while Builder.array_false(config):
                 times += 1
                 self.move_pos(1)
                 config = self.match(layer)
-            self.rotate_times_no_array_movement(times)
+            self.rotate_grid(times, rotate_pos=False)
             self.update_placed(layer, config)
             self.place_cubes(config)
 
-    def full_placed_check(self, layer):
-        if layer == Layer.BOTTOM:
-            offset = 0
-        else:
-            offset = 4
+    def full_placed_check(self, layer: Layer) -> bool:
+        """Returns true if all cubes of a layer have been placed."""
+        offset = layer.value
         for i in range(4):
             if not self._placed[i + offset]:
                 return False
         return True
 
-    def update_placed(self, layer, c):
-        if layer == Layer.BOTTOM:
-            offset = 0
-        else:
-            offset = 4
+    def update_placed(self, layer: Layer, c) -> None:
+        """Updates the state of the placed cubes."""
+        offset = layer.value
         for i in range(len(c)):
             if c[i]:
                 self._placed[i + offset] = True
 
-    def match(self, layer):
+    def match(self, layer: Layer) -> list[bool]:
+        """Returns a list of matches between the configuration and the current position."""
         c = [False, False, False, False]
         for i in range(len(c)):
-            if layer == Layer.BOTTOM:
-                if self._pos[i] == self._config[i] and not self._placed[i]:
-                    c[i] = True
-            else:
-                if self._pos[i] == self._config[i + 4] and not self._placed[i + 4]:
-                    c[i] = True
+            if self._pos[i] == self._config[i + layer.value] and not self._placed[i + layer.value]:
+                c[i] = True
         return c
 
-    @staticmethod
-    def array_false_check(array):
-        return not any(array)
-
-    def place_cubes(self, conf):
+    def place_cubes(self, conf: list[bool]) -> None:
+        """Sends the command to place the cubes."""
         c = conf
         red = 0
         blue = 0
@@ -157,42 +151,21 @@ class Builder:
         if red + blue + yellow > 0:
             self._uart_write.put(CommandBuilder.place_cubes(red, yellow, blue))
 
-    def rotate_times(self, times):
-        if times != 0:
+    def rotate_grid(self, times: int, rotate_pos: bool = True) -> None:
+        """Rotates the grid the specified number of times."""
+        if times % 4 != 0:
             angle = times * 90
-            self._uart_write.put(CommandBuilder.rotate_grid_efficient(angle))
-            self.move_pos(times)
+            self._uart_write.put(CommandBuilder.rotate_grid(angle))
+            if rotate_pos:
+                self.move_pos(times)
 
-    def rotate_times_no_array_movement(self, times):
+    def move_pos(self, times: int) -> None:
+        """Rotates the position by the specified number of times."""
+        times = times % len(self.pos)
         if times != 0:
-            angle = times * 90
-            self._uart_write.put(CommandBuilder.rotate_grid_efficient(angle))
-
-    def move_pos(self, times):
-        if times > 0:
-            self._pos = self.move_array_left(self._pos, times)
-        elif times < 0:
-            times_abs = abs(times)
-            self._pos = self.move_array_right(self._pos, times_abs)
-        else:
-            self._pos = self._pos
+            self._pos = self._pos[times:] + self._pos[:times]
 
     @staticmethod
-    def move_array_left(array, times):
-        a = array[:]
-        for _ in range(times):
-            cache = a[0]
-            for i in range(len(a) - 1):
-                a[i] = a[i + 1]
-            a[len(a) - 1] = cache
-        return a
-
-    @staticmethod
-    def move_array_right(array, times):
-        a = array[:]
-        for _ in range(times):
-            cache = a[len(a) - 1]
-            for i in range(len(a) - 1):
-                a[len(a) - i - 1] = a[len(a) - i - 2]
-            a[0] = cache
-        return a
+    def array_false(array: list[bool]) -> bool:
+        """Returns true if the entire array is false."""
+        return not any(array)

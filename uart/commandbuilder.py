@@ -15,8 +15,12 @@ class CommandBuilder:
     @classmethod
     def rotate_grid(cls, degrees: int) -> Message:
         """Builds the command to rotate the grid by the specified degrees."""
+        deg = degrees % 360
+        if deg > 180:
+            deg -= 360
+
         rotate = RotateGrid()
-        rotate.degrees = degrees
+        rotate.degrees = deg
 
         union = DataUnion()
         union.cmd_rotate_grid = rotate
@@ -27,14 +31,6 @@ class CommandBuilder:
         cmd.data_union = union
         cmd.checksum = 12
         return cmd
-
-    @classmethod
-    def rotate_grid_efficient(cls, degrees: int) -> Message:
-        """Builds the command to rotate the grid in the opposite direction if it's shorter."""
-        d = degrees % 360
-        if d > 180:
-            d -= 360
-        return cls.rotate_grid(d)
 
     @classmethod
     def place_cubes(cls, red: int, yellow: int, blue: int) -> Message:
