@@ -43,9 +43,9 @@ def _validate_config(conf: AppConfiguration) -> None:
 def _signal_handler(signum, _):
     """Handles signals to gracefully stop the application."""
     if signum in (signal.SIGINT, signal.SIGTERM):
-        uart_communicator.terminate_signal()
-        recognition_manager.terminate_signal()
-        builder.terminate_signal()
+        uart_communicator.terminate_signal()  # pylint: disable=possibly-used-before-assignment
+        recognition_manager.terminate_signal()  # pylint: disable=possibly-used-before-assignment
+        builder.terminate_signal()  # pylint: disable=possibly-used-before-assignment
 
 
 if __name__ == '__main__':
