@@ -1,5 +1,6 @@
 """The main application of the 3D Re-Builder."""
 import logging.config
+import multiprocessing
 import queue
 import signal
 import sys
@@ -46,7 +47,8 @@ def _validate_config(conf: AppConfiguration) -> None:
 def _signal_handler(signum, _) -> None:
     """Handles signals to gracefully stop the application."""
     # pylint: disable=possibly-used-before-assignment
-    if signum in (signal.SIGINT, signal.SIGTERM):
+    if signum in (signal.SIGINT, signal.SIGTERM) and multiprocessing.current_process().name == 'MainProcess':
+        logging.info('Shutting down application')
         uart_communicator.halt()
         recognition_manager.halt()
         builder.halt()
@@ -65,6 +67,7 @@ def _handle_uart_messages() -> None:
             logger.debug('Received UART message: %s', cmd)
 
             if cmd == Command.SEND_STATE:
+                logger.info('Start signal received')
                 builder.start()
                 recognition_manager.start(processing=False, recognition=True)
         except queue.Empty:
