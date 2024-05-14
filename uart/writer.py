@@ -76,6 +76,8 @@ class UartWriter:
         while not acknowledged and not self._halt.is_set():
             try:
                 self._logger.debug('Writing message: %s', message.hex(' '))
+                while not self._ack_queue.empty() and not self._halt.is_set():
+                    self._ack_queue.get_nowait()
                 if self._ser is None:
                     self._logger.info('Opening UART write connection')
                     self._ser = serial.Serial(self._port, 115200)
