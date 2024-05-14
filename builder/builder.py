@@ -54,6 +54,13 @@ class Builder:
             self._process = None
             self._logger.info('Builder stopped')
 
+    def alive(self) -> bool:
+        """Returns true if the builder process is alive, false if not."""
+        if self._process is not None:
+            return self._process.is_alive()
+        self._logger.info('Builder process not alive')
+        return False
+
     def terminate_signal(self) -> None:
         """Sends the terminate event to the UART reader and writer tasks."""
         self._terminate.set()

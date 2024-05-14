@@ -40,6 +40,13 @@ class StreamProcessing:
             self._process = None
             self._logger.info('Video stream processing stopped')
 
+    def alive(self) -> bool:
+        """Returns true if the video stream process is alive, false if not."""
+        if self._process is not None:
+            return self._process.is_alive()
+        self._logger.info('Video stream process not alive')
+        return False
+
     def _run(self) -> None:
         """Runs the video stream process."""
         self._logger.info('Video stream process started')

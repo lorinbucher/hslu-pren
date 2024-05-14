@@ -44,6 +44,13 @@ class UartReader:
             self._process = None
             self._logger.info('UART reader stopped')
 
+    def alive(self) -> bool:
+        """Returns true if the UART reader process is alive, false if not."""
+        if self._process is not None:
+            return self._process.is_alive()
+        self._logger.info('UART reader process not alive')
+        return False
+
     def _run(self) -> None:
         """Runs the UART reader process."""
         self._logger.info('UART reader process started')
