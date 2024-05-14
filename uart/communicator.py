@@ -12,33 +12,48 @@ class UartCommunicator:
 
     def __init__(self, app_config: AppConfiguration, read_queue: Queue, write_queue: Queue):
         self._logger = logging.getLogger('uart.communicator')
-        self._terminate = Event()
+        self._halt_reader = Event()
+        self._halt_writer = Event()
         self._ack_queue: Queue = Queue()
-        self._reader = UartReader(app_config.serial_read, self._terminate, self._ack_queue, read_queue)
-        self._writer = UartWriter(app_config.serial_write, self._terminate, self._ack_queue, write_queue)
+        self._reader = UartReader(app_config.serial_read, self._halt_reader, self._ack_queue, read_queue)
+        self._writer = UartWriter(app_config.serial_write, self._halt_writer, self._ack_queue, write_queue)
 
-    def start(self) -> None:
-        """Starts the UART reader and writer tasks."""
-        self._logger.info('Starting UART tasks')
-        self._terminate.clear()
-        self._reader.start()
-        self._writer.start()
-        self._logger.info('UART tasks started')
+    def start(self, reader: bool = True, writer: bool = True) -> None:
+        """Starts the UART reader and/or writer tasks."""
+        if reader:
+            self._halt_reader.clear()
+            self._reader.start()
+        if writer:
+            self._halt_writer.clear()
+            self._writer.start()
 
-    def join(self) -> None:
-        """Waits for UART reader and writer tasks to complete."""
-        self._logger.info('Waiting for UART tasks to complete')
-        self._reader.join()
-        self._writer.join()
-        self._logger.info('UART tasks completed')
+    def join(self, reader: bool = True, writer: bool = True) -> None:
+        """Waits for UART reader and/or writer tasks to complete."""
+        if reader:
+            self._reader.join()
+        if writer:
+            self._writer.join()
 
-    def stop(self) -> None:
-        """Stops the UART reader and writer tasks."""
-        self._logger.info('Stopping UART tasks')
-        self._reader.stop()
-        self._writer.stop()
-        self._logger.info('UART tasks stopped')
+    def stop(self, reader: bool = True, writer: bool = True) -> None:
+        """Stops the UART reader and/or writer tasks."""
+        if reader:
+            self._reader.stop()
+        if writer:
+            self._writer.stop()
 
-    def terminate_signal(self) -> None:
-        """Sends the terminate event to the UART reader and writer tasks."""
-        self._terminate.set()
+    def halt(self, reader: bool = True, writer: bool = True) -> None:
+        """Sends the halt event to the UART reader and/or writer tasks."""
+        if reader:
+            self._halt_reader.set()
+        if writer:
+            self._halt_writer.set()
+
+    def alive(self, reader: bool = True, writer: bool = True) -> bool:
+        """Checks if the UART reader and/or writer taskss are alive."""
+        if reader and writer:
+            return self._reader.alive() and self._writer.alive()
+        elif reader:
+            return self._reader.alive()
+        elif writer:
+            return self._writer.alive()
+        return False

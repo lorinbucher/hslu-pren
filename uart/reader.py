@@ -13,10 +13,10 @@ from .command import Command, Message
 class UartReader:
     """Reads data from the UART interface."""
 
-    def __init__(self, port: str, terminate: Event, ack_queue: Queue, read_queue: Queue) -> None:
+    def __init__(self, port: str, halt: Event, ack_queue: Queue, read_queue: Queue) -> None:
         self._logger = logging.getLogger('uart.reader')
         self._port = port
-        self._terminate = terminate
+        self._halt = halt
         self._ack_queue = ack_queue
         self._read_queue = read_queue
         self._process: Process | None = None
@@ -46,16 +46,15 @@ class UartReader:
 
     def alive(self) -> bool:
         """Returns true if the UART reader process is alive, false if not."""
-        if self._process is not None:
-            return self._process.is_alive()
-        self._logger.info('UART reader process not alive')
-        return False
+        result = self._process is not None and self._process.is_alive()
+        self._logger.info('UART reader alive: %s', result)
+        return result
 
     def _run(self) -> None:
         """Runs the UART reader process."""
         self._logger.info('UART reader process started')
         data = b''
-        while not self._terminate.is_set():
+        while not self._halt.is_set():
             data += self._read()
             preamble_pos = data.find(b'AAAB')
             if preamble_pos < 0:

@@ -11,10 +11,10 @@ from shared.data import AppConfiguration
 class StreamProcessing:
     """Processes the incoming video stream."""
 
-    def __init__(self, app_config: AppConfiguration, terminate: Event, process_queue: Queue):
+    def __init__(self, app_config: AppConfiguration, halt: Event, process_queue: Queue):
         self._logger = logging.getLogger('video.stream_processing')
         self._app_config = app_config
-        self._terminate = terminate
+        self._halt = halt
         self._process_queue = process_queue
         self._process: Process | None = None
 
@@ -42,15 +42,14 @@ class StreamProcessing:
 
     def alive(self) -> bool:
         """Returns true if the video stream process is alive, false if not."""
-        if self._process is not None:
-            return self._process.is_alive()
-        self._logger.info('Video stream process not alive')
-        return False
+        result = self._process is not None and self._process.is_alive()
+        self._logger.info('Video stream processing alive: %s', result)
+        return result
 
     def _run(self) -> None:
         """Runs the video stream process."""
         self._logger.info('Video stream process started')
-        while not self._terminate.is_set():
+        while not self._halt.is_set():
             time.sleep(0.5)
 
             try:

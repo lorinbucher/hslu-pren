@@ -11,10 +11,10 @@ from shared.enumerations import CubeColor
 class CubeRecognition:
     """Performs the cube image recognition."""
 
-    def __init__(self, app_config: AppConfiguration, terminate: Event, builder_queue: Queue, process_queue: Queue):
+    def __init__(self, app_config: AppConfiguration, halt: Event, builder_queue: Queue, process_queue: Queue):
         self._logger = logging.getLogger('video.cube_recognition')
         self._app_config = app_config
-        self._terminate = terminate
+        self._halt = halt
         self._builder_queue = builder_queue
         self._process_queue = process_queue
 
@@ -46,24 +46,25 @@ class CubeRecognition:
 
     def alive(self) -> bool:
         """Returns true if the cube image recognition process is alive, false if not."""
-        if self._process is not None:
-            return self._process.is_alive()
-        self._logger.info('Cube image recognition process not alive')
-        return False
+        result = self._process is not None and self._process.is_alive()
+        self._logger.info('Cube image recognition alive: %s', result)
+        return result
 
     def _run(self) -> None:
         """Runs the cube image recognition process."""
         self._logger.info('Cube image recognition process started')
         counter = 0
-        while not self._terminate.is_set() and not self._cube_config.completed():
+        while not self._halt.is_set():
             try:
                 data = self._process_queue.get(block=True, timeout=5)
                 self._logger.debug('Received data from video processing: %s', data)
                 self._cube_config.set_color(counter, CubeColor.NONE)
                 counter += 1
+                self._builder_queue.put(self._cube_config)
+                if self._cube_config.completed():
+                    self._logger.info('Cube image recognition completed: %s', self._cube_config.to_dict())
+                    self._halt.set()
             except queue.Empty:
                 self._logger.warning('Video stream processing queue is empty')
 
-        self._builder_queue.put(self._cube_config)
-        self._terminate.set()
         self._logger.info('Cube image recognition process stopped')

@@ -47,20 +47,26 @@ def _signal_handler(signum, _) -> None:
     """Handles signals to gracefully stop the application."""
     # pylint: disable=possibly-used-before-assignment
     if signum in (signal.SIGINT, signal.SIGTERM):
-        uart_communicator.terminate_signal()
-        recognition_manager.terminate_signal()
-        builder.terminate_signal()
-        terminate.set()
+        uart_communicator.halt()
+        recognition_manager.halt()
+        builder.halt()
+        halt.set()
 
 
-def _handle_uart_messages(terminate_signal: Event, recv_queue: Queue) -> None:
+def _handle_uart_messages() -> None:
     """Handles received UART messages."""
+    # pylint: disable=possibly-used-before-assignment
     logger = logging.getLogger('main.messages')
     logger.info('Starting UART message listener')
-    while not terminate_signal.is_set():
+    while not halt.is_set():
         try:
-            message = recv_queue.get(timeout=2.0)
-            logger.debug('Received UART message: %s', Command(message.cmd))
+            message = uart_read.get(timeout=2.0)
+            cmd = Command(message.cmd)
+            logger.debug('Received UART message: %s', cmd)
+
+            if cmd == Command.SEND_STATE:
+                builder.start()
+                recognition_manager.start(processing=False, recognition=True)
         except queue.Empty:
             continue
 
@@ -76,7 +82,7 @@ if __name__ == '__main__':
     _validate_config(config)
 
     # Handle signals
-    terminate = Event()
+    halt = Event()
     signal.signal(signal.SIGINT, _signal_handler)
     signal.signal(signal.SIGTERM, _signal_handler)
 
@@ -87,26 +93,22 @@ if __name__ == '__main__':
 
     # Initialize processes
     builder = Builder(builder_queue, uart_write)
-    uart_communicator = UartCommunicator(config, uart_read, uart_write)
     recognition_manager = RecognitionManager(config, builder_queue)
+    uart_communicator = UartCommunicator(config, uart_read, uart_write)
 
-    # Start processes
+    # Start initial processes
     uart_communicator.start()
-    recognition_manager.start()
-    builder.start()
-
-    # TODO (lorin): start uart, video processing and web server from the beginning
-    # TODO (lorin): start video recognition and builder after start signal received, reset in that case
+    recognition_manager.start(processing=True, recognition=False)
 
     # Handle received UART messages
-    _handle_uart_messages(terminate, uart_read)
+    _handle_uart_messages()
 
     # Wait for processes to complete
-    uart_communicator.join()
-    recognition_manager.join()
     builder.join()
+    recognition_manager.join()
+    uart_communicator.join()
 
     # Stop processes
-    uart_communicator.stop()
-    recognition_manager.stop()
     builder.stop()
+    recognition_manager.stop()
+    uart_communicator.stop()

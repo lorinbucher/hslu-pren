@@ -21,7 +21,7 @@ class Builder:
 
     def __init__(self, builder_queue: Queue, uart_write: Queue) -> None:
         self._logger = logging.getLogger('builder.builder')
-        self._terminate = Event()
+        self._halt = Event()
         self._builder_queue = builder_queue
         self._uart_write = uart_write
 
@@ -54,21 +54,20 @@ class Builder:
             self._process = None
             self._logger.info('Builder stopped')
 
+    def halt(self) -> None:
+        """Sends the halt event to builder task."""
+        self._halt.set()
+
     def alive(self) -> bool:
         """Returns true if the builder process is alive, false if not."""
-        if self._process is not None:
-            return self._process.is_alive()
-        self._logger.info('Builder process not alive')
-        return False
-
-    def terminate_signal(self) -> None:
-        """Sends the terminate event to the UART reader and writer tasks."""
-        self._terminate.set()
+        result = self._process is not None and self._process.is_alive()
+        self._logger.info('Builder alive: %s', result)
+        return result
 
     def _run(self) -> None:
         """Runs the builder process."""
         self._logger.info('Builder process started')
-        while not self._terminate.is_set():
+        while not self._halt.is_set():
             try:
                 config = self._builder_queue.get(timeout=2.0)
                 if not isinstance(config, CubeConfiguration):
@@ -79,7 +78,7 @@ class Builder:
                     self._logger.info('Received complete configuration: %s', config.to_dict())
                     self._config = config.config
                     self.build()
-                    self._terminate.set()
+                    self._halt.set()
             except queue.Empty:
                 continue
 

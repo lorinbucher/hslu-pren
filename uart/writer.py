@@ -14,10 +14,10 @@ from .command import Command, Message
 class UartWriter:
     """Writes data to the UART interface."""
 
-    def __init__(self, port: str, terminate: Event, ack_queue: Queue, write_queue: Queue) -> None:
+    def __init__(self, port: str, halt: Event, ack_queue: Queue, write_queue: Queue) -> None:
         self._logger = logging.getLogger('uart.writer')
         self._port = port
-        self._terminate = terminate
+        self._halt = halt
         self._ack_queue = ack_queue
         self._write_queue = write_queue
         self._process: Process | None = None
@@ -47,15 +47,14 @@ class UartWriter:
 
     def alive(self) -> bool:
         """Returns true if the UART writer process is alive, false if not."""
-        if self._process is not None:
-            return self._process.is_alive()
-        self._logger.info('UART writer process not alive')
-        return False
+        result = self._process is not None and self._process.is_alive()
+        self._logger.info('UART writer alive: %s', result)
+        return result
 
     def _run(self) -> None:
         """Runs the UART writer process."""
         self._logger.info('UART writer process started')
-        while not self._terminate.is_set():
+        while not self._halt.is_set():
             try:
                 message = self._write_queue.get(timeout=2.0)
                 if not isinstance(message, Message):
@@ -73,7 +72,7 @@ class UartWriter:
         """Writes the command to the UART connection."""
         message = self._encode(command)
         acknowledged = False
-        while not acknowledged and not self._terminate.is_set():
+        while not acknowledged and not self._halt.is_set():
             try:
                 self._logger.debug('Writing message: %s', message.hex(' '))
                 if self._ser is None:
