@@ -17,6 +17,8 @@ class RecognitionManager:
         self._process_queue: Queue = Queue(maxsize=25)
         self._stream_processing = StreamProcessing(app_config, self._halt_processing, self._process_queue)
         self._cube_recognition = CubeRecognition(app_config, self._halt_recognition, builder_queue, self._process_queue)
+        self._halt_processing.set()
+        self._halt_recognition.set()
 
     def start(self, processing: bool = False, recognition: bool = False) -> None:
         """Starts the video stream processing and/or cube image recognition tasks."""
@@ -52,9 +54,18 @@ class RecognitionManager:
         if recognition:
             self._halt_recognition.set()
 
+    def halted(self, processing: bool = False, recognition: bool = False) -> bool:
+        """Returns true if the halt event is set, false if not."""
+        if processing and recognition:
+            return self._halt_processing.is_set() and self._halt_recognition.is_set()
+        elif processing:
+            return self._halt_processing.is_set()
+        elif recognition:
+            return self._halt_recognition.is_set()
+        return False
+
     def alive(self, processing: bool = False, recognition: bool = False) -> bool:
         """Checks if the stream processing and/or cube image recognition tasks are alive."""
-        self._logger.info('Alive check - processing: %s, recognition: %s', processing, recognition)
         if processing and recognition:
             return self._stream_processing.alive() and self._cube_recognition.alive()
         elif processing:

@@ -47,7 +47,8 @@ class CubeRecognition:
     def alive(self) -> bool:
         """Returns true if the cube image recognition process is alive, false if not."""
         result = self._process is not None and self._process.is_alive()
-        self._logger.info('Cube image recognition alive: %s', result)
+        if not result:
+            self._logger.warning('Cube image recognition not alive')
         return result
 
     def _run(self) -> None:

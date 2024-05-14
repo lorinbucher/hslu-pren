@@ -48,7 +48,8 @@ class UartWriter:
     def alive(self) -> bool:
         """Returns true if the UART writer process is alive, false if not."""
         result = self._process is not None and self._process.is_alive()
-        self._logger.info('UART writer alive: %s', result)
+        if not result:
+            self._logger.warning('UART writer not alive')
         return result
 
     def _run(self) -> None:

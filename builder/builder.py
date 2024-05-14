@@ -24,6 +24,7 @@ class Builder:
         self._halt = Event()
         self._builder_queue = builder_queue
         self._uart_write = uart_write
+        self._halt.set()
 
         self._process: Process | None = None
         self._config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED,
@@ -35,6 +36,7 @@ class Builder:
         """Starts the builder."""
         self._logger.info('Starting builder')
         self.reset()
+        self._halt.clear()
         self._process = Process(target=self._run)
         self._process.start()
         self._logger.info('Builder started')
@@ -59,10 +61,15 @@ class Builder:
         self._logger.info('Halting builder')
         self._halt.set()
 
+    def halted(self) -> bool:
+        """Returns true if the halt event is set, false if not."""
+        return self._halt.is_set()
+
     def alive(self) -> bool:
         """Returns true if the builder process is alive, false if not."""
         result = self._process is not None and self._process.is_alive()
-        self._logger.info('Builder alive: %s', result)
+        if not result:
+            self._logger.warning('Builder not alive')
         return result
 
     def _run(self) -> None:

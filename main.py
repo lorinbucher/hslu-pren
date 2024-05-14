@@ -61,6 +61,7 @@ def main() -> None:
     logger.info('Entering main loop')
     while not halt.is_set():
         _handle_uart_messages()
+        _process_manager()
 
     logger.info('Exiting main loop')
 
@@ -69,7 +70,7 @@ def _handle_uart_messages() -> None:
     """Handles received UART messages."""
     # pylint: disable=possibly-used-before-assignment
     try:
-        message = uart_read.get(timeout=0.1)
+        message = uart_read.get(timeout=0.25)
         cmd = Command(message.cmd)
         logger.debug('Received UART message: %s', cmd)
 
@@ -79,6 +80,23 @@ def _handle_uart_messages() -> None:
             recognition_manager.start(recognition=True)
     except queue.Empty:
         pass
+
+
+def _process_manager() -> None:
+    """Checks if all processes are still alive."""
+    # pylint: disable=possibly-used-before-assignment
+    if not builder.halted() and not builder.alive():
+        builder.start()
+
+    if not recognition_manager.halted(processing=True) and not recognition_manager.alive(processing=True):
+        recognition_manager.start(processing=True)
+    if not recognition_manager.halted(recognition=True) and not recognition_manager.alive(recognition=True):
+        recognition_manager.start(recognition=True)
+
+    if not uart_communicator.halted(reader=True) and not uart_communicator.alive(reader=True):
+        uart_communicator.start(reader=True)
+    if not uart_communicator.halted(writer=True) and not uart_communicator.alive(writer=True):
+        uart_communicator.start(writer=True)
 
 
 if __name__ == '__main__':
