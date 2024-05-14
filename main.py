@@ -6,6 +6,7 @@ import tomllib
 from multiprocessing import Queue
 
 import shared.config as app_config
+from builder.builder import Builder
 from shared.data import AppConfiguration
 from uart.communicator import UartCommunicator
 from video.manager import RecognitionManager
@@ -44,6 +45,7 @@ def _signal_handler(signum, _):
     if signum in (signal.SIGINT, signal.SIGTERM):
         uart_communicator.terminate_signal()
         recognition_manager.terminate_signal()
+        builder.terminate_signal()
 
 
 if __name__ == '__main__':
@@ -64,21 +66,25 @@ if __name__ == '__main__':
     uart_write: Queue = Queue()
 
     # Initialize processes
+    builder = Builder(builder_queue, uart_write)
     uart_communicator = UartCommunicator(config, uart_read, uart_write)
     recognition_manager = RecognitionManager(config, builder_queue)
 
     # Start processes
     uart_communicator.start()
     recognition_manager.start()
+    builder.start()
+
+    # TODO (lorin): start uart, video processing and web server from the beginning
+    # TODO (lorin): start video recognition and builder after start signal received, reset in that case
+    # TODO (lorin): handle received uart messages
 
     # Wait for processes to complete
     uart_communicator.join()
     recognition_manager.join()
+    builder.join()
 
     # Stop processes
     uart_communicator.stop()
     recognition_manager.stop()
-
-    # Temporary for testing
-    data = builder_queue.get()
-    logging.info('Detected cube configuration: %s', data.to_dict())
+    builder.stop()
