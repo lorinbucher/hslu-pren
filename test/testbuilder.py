@@ -173,9 +173,9 @@ class TestBuildAlgorithm(unittest.TestCase):
 
         builder.update_placed(Layer.BOTTOM, [True, True, True, True])
         self.assertEqual([True, True, True, True, False, False, False, False], builder.placed)
-        self.assertFalse(builder.full_placed_check(Layer.TOP))
-        self.assertTrue(builder.full_placed_check(Layer.BOTTOM))
+        self.assertFalse(builder.layer_placed(Layer.TOP))
+        self.assertTrue(builder.layer_placed(Layer.BOTTOM))
         builder.update_placed(Layer.TOP, [True, True, True, True])
         self.assertEqual([True, True, True, True, True, True, True, True], builder.placed)
-        self.assertTrue(builder.full_placed_check(Layer.TOP))
-        self.assertTrue(builder.full_placed_check(Layer.BOTTOM))
+        self.assertTrue(builder.layer_placed(Layer.TOP))
+        self.assertTrue(builder.layer_placed(Layer.BOTTOM))

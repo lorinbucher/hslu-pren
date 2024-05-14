@@ -34,6 +34,7 @@ class Builder:
     def start(self) -> None:
         """Starts the builder."""
         self._logger.info('Starting builder')
+        self.reset()
         self._process = Process(target=self._run)
         self._process.start()
         self._logger.info('Builder started')
@@ -69,6 +70,8 @@ class Builder:
 
                 if config.completed():
                     self._logger.info('Received complete configuration: %s', config.to_dict())
+                    self._config = config.config
+                    self.build()
                     self._terminate.set()
             except queue.Empty:
                 continue
@@ -96,11 +99,12 @@ class Builder:
         """Builds the bottom and top layer of the configuration."""
         self.build_layer(Layer.BOTTOM)
         self.build_layer(Layer.TOP)
+        self._logger.info('Move lift down command queued')
         self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_DOWN))
 
     def build_layer(self, layer: Layer) -> None:
         """Builds a layer."""
-        while not self.full_placed_check(layer):
+        while not self.layer_placed(layer):
             config = self.match(layer)
             times = 0
             while Builder.array_false(config):
@@ -111,13 +115,10 @@ class Builder:
             self.update_placed(layer, config)
             self.place_cubes(config)
 
-    def full_placed_check(self, layer: Layer) -> bool:
+    def layer_placed(self, layer: Layer) -> bool:
         """Returns true if all cubes of a layer have been placed."""
         offset = layer.value
-        for i in range(4):
-            if not self._placed[i + offset]:
-                return False
-        return True
+        return all(self._placed[offset: offset + 4])
 
     def update_placed(self, layer: Layer, c) -> None:
         """Updates the state of the placed cubes."""
@@ -138,8 +139,8 @@ class Builder:
         """Sends the command to place the cubes."""
         c = conf
         red = 0
-        blue = 0
         yellow = 0
+        blue = 0
         for i in range(len(c)):
             if c[i]:
                 if self._pos[i] == CubeColor.RED:
@@ -148,13 +149,15 @@ class Builder:
                     yellow = 1
                 elif self._pos[i] == CubeColor.BLUE:
                     blue = 1
-        if red + blue + yellow > 0:
+        if (red + yellow + blue) > 0:
+            self._logger.info('Place cubes command queued - red: %s, yellow: %s, blue: %s', red, yellow, blue)
             self._uart_write.put(CommandBuilder.place_cubes(red, yellow, blue))
 
     def rotate_grid(self, times: int, rotate_pos: bool = True) -> None:
         """Rotates the grid the specified number of times."""
         if times % 4 != 0:
             angle = times * 90
+            self._logger.info('Rotating grid command queued: %s°', angle)
             self._uart_write.put(CommandBuilder.rotate_grid(angle))
             if rotate_pos:
                 self.move_pos(times)
