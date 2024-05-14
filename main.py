@@ -55,17 +55,6 @@ def _signal_handler(signum, _) -> None:
         halt.set()
 
 
-def main() -> None:
-    """The main application loop managing all processes."""
-    # pylint: disable=possibly-used-before-assignment
-    logger.info('Entering main loop')
-    while not halt.is_set():
-        _handle_uart_messages()
-        _process_manager()
-
-    logger.info('Exiting main loop')
-
-
 def _handle_uart_messages() -> None:
     """Handles received UART messages."""
     # pylint: disable=possibly-used-before-assignment
@@ -76,6 +65,7 @@ def _handle_uart_messages() -> None:
 
         if cmd == Command.SEND_STATE:
             logger.info('Start signal received')
+            _clear_queues()
             builder.start()
             recognition_manager.start(recognition=True)
     except queue.Empty:
@@ -97,6 +87,28 @@ def _process_manager() -> None:
         uart_communicator.start(reader=True)
     if not uart_communicator.halted(writer=True) and not uart_communicator.alive(writer=True):
         uart_communicator.start(writer=True)
+
+
+def _clear_queues() -> None:
+    """Clears the queues."""
+    # pylint: disable=possibly-used-before-assignment
+    while not builder_queue.empty() and not halt.is_set():
+        builder_queue.get_nowait()
+    while not uart_read.empty() and not halt.is_set():
+        uart_read.get_nowait()
+    while not uart_write.empty() and not halt.is_set():
+        uart_write.get_nowait()
+
+
+def main() -> None:
+    """The main application loop managing all processes."""
+    # pylint: disable=possibly-used-before-assignment
+    logger.info('Entering main loop')
+    while not halt.is_set():
+        _handle_uart_messages()
+        _process_manager()
+
+    logger.info('Exiting main loop')
 
 
 if __name__ == '__main__':
