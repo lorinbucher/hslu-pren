@@ -68,7 +68,7 @@ class UartWriter:
         acknowledged = False
         while not acknowledged and not self._terminate.is_set():
             try:
-                self._logger.debug('Writing message: %s', message)
+                self._logger.debug('Writing message: %s', message.hex(' '))
                 if self._ser is None:
                     self._logger.info('Opening UART write connection')
                     self._ser = serial.Serial(self._port, 115200)
