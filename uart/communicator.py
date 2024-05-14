@@ -18,8 +18,9 @@ class UartCommunicator:
         self._reader = UartReader(app_config.serial_read, self._halt_reader, self._ack_queue, read_queue)
         self._writer = UartWriter(app_config.serial_write, self._halt_writer, self._ack_queue, write_queue)
 
-    def start(self, reader: bool = True, writer: bool = True) -> None:
+    def start(self, reader: bool = False, writer: bool = False) -> None:
         """Starts the UART reader and/or writer tasks."""
+        self._logger.info('Starting processes - reader: %s, writer: %s', reader, writer)
         if reader:
             self._halt_reader.clear()
             self._reader.start()
@@ -27,29 +28,33 @@ class UartCommunicator:
             self._halt_writer.clear()
             self._writer.start()
 
-    def join(self, reader: bool = True, writer: bool = True) -> None:
+    def join(self, reader: bool = False, writer: bool = False) -> None:
         """Waits for UART reader and/or writer tasks to complete."""
+        self._logger.info('Joining processes - reader: %s, writer: %s', reader, writer)
         if reader:
             self._reader.join()
         if writer:
             self._writer.join()
 
-    def stop(self, reader: bool = True, writer: bool = True) -> None:
+    def stop(self, reader: bool = False, writer: bool = False) -> None:
         """Stops the UART reader and/or writer tasks."""
+        self._logger.info('Stopping processes - reader: %s, writer: %s', reader, writer)
         if reader:
             self._reader.stop()
         if writer:
             self._writer.stop()
 
-    def halt(self, reader: bool = True, writer: bool = True) -> None:
+    def halt(self, reader: bool = False, writer: bool = False) -> None:
         """Sends the halt event to the UART reader and/or writer tasks."""
+        self._logger.info('Halting processes - reader: %s, writer: %s', reader, writer)
         if reader:
             self._halt_reader.set()
         if writer:
             self._halt_writer.set()
 
-    def alive(self, reader: bool = True, writer: bool = True) -> bool:
-        """Checks if the UART reader and/or writer taskss are alive."""
+    def alive(self, reader: bool = False, writer: bool = False) -> bool:
+        """Checks if the UART reader and/or writer tasks are alive."""
+        self._logger.info('Alive check - reader: %s, writer: %s', reader, writer)
         if reader and writer:
             return self._reader.alive() and self._writer.alive()
         elif reader:

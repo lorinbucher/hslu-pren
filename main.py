@@ -20,7 +20,7 @@ CONFIG_FILE = 'config.toml'
 
 def _parse_config() -> dict:
     """Parses the configuration file."""
-    logger = logging.getLogger('main.config')
+    # pylint: disable=possibly-used-before-assignment
     try:
         logger.info('Parsing configuration file: %s', CONFIG_FILE)
         with open(CONFIG_FILE, 'rb') as config_file:
@@ -34,7 +34,7 @@ def _parse_config() -> dict:
 
 def _validate_config(conf: AppConfiguration) -> None:
     """Validates the configuration of the application."""
-    logger = logging.getLogger('main.config')
+    # pylint: disable=possibly-used-before-assignment
     logger.info('Validating configuration file: %s', CONFIG_FILE)
     is_valid, error = conf.validate()
     if is_valid:
@@ -48,36 +48,42 @@ def _signal_handler(signum, _) -> None:
     """Handles signals to gracefully stop the application."""
     # pylint: disable=possibly-used-before-assignment
     if signum in (signal.SIGINT, signal.SIGTERM) and multiprocessing.current_process().name == 'MainProcess':
-        logging.info('Shutting down application')
-        uart_communicator.halt()
-        recognition_manager.halt()
+        logger.info('Shutting down application')
+        uart_communicator.halt(reader=True, writer=True)
+        recognition_manager.halt(processing=True, recognition=True)
         builder.halt()
         halt.set()
+
+
+def main() -> None:
+    """The main application loop managing all processes."""
+    # pylint: disable=possibly-used-before-assignment
+    logger.info('Entering main loop')
+    while not halt.is_set():
+        _handle_uart_messages()
+
+    logger.info('Exiting main loop')
 
 
 def _handle_uart_messages() -> None:
     """Handles received UART messages."""
     # pylint: disable=possibly-used-before-assignment
-    logger = logging.getLogger('main.messages')
-    logger.info('Starting UART message listener')
-    while not halt.is_set():
-        try:
-            message = uart_read.get(timeout=2.0)
-            cmd = Command(message.cmd)
-            logger.debug('Received UART message: %s', cmd)
+    try:
+        message = uart_read.get(timeout=0.1)
+        cmd = Command(message.cmd)
+        logger.debug('Received UART message: %s', cmd)
 
-            if cmd == Command.SEND_STATE:
-                logger.info('Start signal received')
-                builder.start()
-                recognition_manager.start(processing=False, recognition=True)
-        except queue.Empty:
-            continue
-
-    logger.info('Stopping UART message listener')
+        if cmd == Command.SEND_STATE:
+            logger.info('Start signal received')
+            builder.start()
+            recognition_manager.start(recognition=True)
+    except queue.Empty:
+        pass
 
 
 if __name__ == '__main__':
     logging.config.dictConfig(app_config.logging_config)
+    logger = logging.getLogger('main')
 
     # Parse configuration file
     config = AppConfiguration()
@@ -100,18 +106,16 @@ if __name__ == '__main__':
     uart_communicator = UartCommunicator(config, uart_read, uart_write)
 
     # Start initial processes
-    uart_communicator.start()
-    recognition_manager.start(processing=True, recognition=False)
-
-    # Handle received UART messages
-    _handle_uart_messages()
+    uart_communicator.start(reader=True, writer=True)
+    recognition_manager.start(processing=True)
+    main()
 
     # Wait for processes to complete
     builder.join()
-    recognition_manager.join()
-    uart_communicator.join()
+    recognition_manager.join(processing=True, recognition=True)
+    uart_communicator.join(reader=True, writer=True)
 
     # Stop processes
     builder.stop()
-    recognition_manager.stop()
-    uart_communicator.stop()
+    recognition_manager.stop(processing=True, recognition=True)
+    uart_communicator.stop(reader=True, writer=True)

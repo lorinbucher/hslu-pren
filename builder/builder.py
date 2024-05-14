@@ -56,6 +56,7 @@ class Builder:
 
     def halt(self) -> None:
         """Sends the halt event to builder task."""
+        self._logger.info('Halting builder')
         self._halt.set()
 
     def alive(self) -> bool:
