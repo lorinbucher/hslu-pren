@@ -55,7 +55,7 @@ class StreamProcessing:
 
             try:
                 if self._process_queue.full():
-                    self._process_queue.get(block=False)
+                    self._process_queue.get_nowait()
                 self._process_queue.put('Test', block=False)
             except queue.Full:
                 self._logger.warning('Video stream processing queue is full')

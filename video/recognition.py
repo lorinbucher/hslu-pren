@@ -6,6 +6,7 @@ from multiprocessing.synchronize import Event
 
 from shared.data import AppConfiguration, CubeConfiguration
 from shared.enumerations import CubeColor
+from web.api import CubeApi
 
 
 class CubeRecognition:
@@ -57,8 +58,8 @@ class CubeRecognition:
         counter = 0
         while not self._halt.is_set():
             try:
-                data = self._process_queue.get(block=True, timeout=5)
-                self._logger.debug('Received data from video processing: %s', data)
+                data = self._process_queue.get(block=True, timeout=2.0)
+                self._logger.debug('Received data from video processing: %s', type(data))
                 self._cube_config.set_color(counter, CubeColor.NONE)
                 counter += 1
                 self._builder_queue.put(self._cube_config)
@@ -68,4 +69,6 @@ class CubeRecognition:
             except queue.Empty:
                 self._logger.warning('Video stream processing queue is empty')
 
+        self._logger.info('Sending cube configuration to web api')
+        CubeApi.send_with_retry(CubeApi(self._app_config).post_config, self._cube_config)
         self._logger.info('Cube image recognition process stopped')

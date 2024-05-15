@@ -5,6 +5,7 @@ import queue
 import signal
 import sys
 import tomllib
+from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import Queue
 from threading import Event
 
@@ -14,6 +15,7 @@ from shared.data import AppConfiguration
 from uart.command import Command
 from uart.communicator import UartCommunicator
 from video.manager import RecognitionManager
+from web.api import CubeApi
 
 CONFIG_FILE = 'config.toml'
 
@@ -63,11 +65,9 @@ def _handle_uart_messages() -> None:
         cmd = Command(message.cmd)
         logger.debug('Received UART message: %s', cmd)
 
-        if cmd == Command.SEND_STATE:
+        if cmd == Command.SEND_STATE:  # TODO (lorin): implement actual command
             logger.info('Start signal received')
-            _clear_queues()
-            builder.start()
-            recognition_manager.start(recognition=True)
+            _start_new_run()
     except queue.Empty:
         pass
 
@@ -89,8 +89,8 @@ def _process_manager() -> None:
         uart_communicator.start(writer=True)
 
 
-def _clear_queues() -> None:
-    """Clears the queues."""
+def _start_new_run() -> None:
+    """Starts a new run."""
     # pylint: disable=possibly-used-before-assignment
     while not builder_queue.empty() and not halt.is_set():
         builder_queue.get_nowait()
@@ -98,6 +98,10 @@ def _clear_queues() -> None:
         uart_read.get_nowait()
     while not uart_write.empty() and not halt.is_set():
         uart_write.get_nowait()
+
+    executor.submit(CubeApi.send_with_retry, api.post_start)
+    builder.start()
+    recognition_manager.start(recognition=True)
 
 
 def main() -> None:
@@ -131,6 +135,8 @@ if __name__ == '__main__':
     uart_write: Queue = Queue()
 
     # Initialize processes
+    executor = ProcessPoolExecutor()
+    api = CubeApi(config)
     builder = Builder(builder_queue, uart_write)
     recognition_manager = RecognitionManager(config, builder_queue)
     uart_communicator = UartCommunicator(config, uart_read, uart_write)
@@ -140,12 +146,17 @@ if __name__ == '__main__':
     recognition_manager.start(processing=True)
     main()
 
+    # TODO (lorin): implement actual handling of end
+    api.send_with_retry(api.post_end)
+    api.send_with_retry(api.get_config)
+
     # Wait for processes to complete
     builder.join()
     recognition_manager.join(processing=True, recognition=True)
     uart_communicator.join(reader=True, writer=True)
 
     # Stop processes
+    executor.shutdown()
     builder.stop()
     recognition_manager.stop(processing=True, recognition=True)
     uart_communicator.stop(reader=True, writer=True)
