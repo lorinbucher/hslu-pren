@@ -21,6 +21,14 @@ class Command(Enum):
     SEND_IO_STATE = 12
 
 
+class ButtonState(Enum):
+    """The button states."""
+    RELEASED = 0
+    PRESSED = 1
+    SHORT_CLICKED = 2
+    LONG_CLICKED = 3
+
+
 class RotateGrid(Structure):
     """The data payload of the rotate grid command."""
     _fields_ = [
@@ -51,14 +59,6 @@ class SendState(Structure):
         ('dummy3', c_uint8),
         ('dummy4', c_uint8)
     ]
-
-
-class ButtonState(Enum):
-    """The data payload of the IO state buttons."""
-    RELEASED = 0
-    PRESSED = 1
-    SHORT_CLICKED = 2
-    LONG_CLICKED = 3
 
 
 class SendIOState(Structure):

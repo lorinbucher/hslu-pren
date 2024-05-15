@@ -76,11 +76,10 @@ class UartReader:
     def _read(self) -> bytes:
         """Reads data received from the UART connection."""
         try:
-            if self._ser is None:
+            if self._ser is None or not self._ser.is_open:
                 self._logger.info('Opening UART read connection')
                 self._ser = serial.Serial(self._port, 115200, timeout=2.0)
-            if self._ser.is_open:
-                return self._ser.read(23)
+            return self._ser.read(23)
         except (SerialException, SerialTimeoutException, ValueError) as error:
             self._logger.error('Failed to read message: %s', error)
             self._ser = None

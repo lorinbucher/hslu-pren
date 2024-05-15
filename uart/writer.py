@@ -78,11 +78,10 @@ class UartWriter:
                 self._logger.debug('Writing message: %s', message.hex(' '))
                 while not self._ack_queue.empty() and not self._halt.is_set():
                     self._ack_queue.get_nowait()
-                if self._ser is None:
+                if self._ser is None or not self._ser.is_open:
                     self._logger.info('Opening UART write connection')
                     self._ser = serial.Serial(self._port, 115200)
-                if self._ser.is_open:
-                    self._ser.write(message)
+                self._ser.write(message)
 
                 ack_result = self._ack_queue.get(timeout=2.0)
                 self._logger.debug('Received acknowledge result: %s', ack_result.cmd)
