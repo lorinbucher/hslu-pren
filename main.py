@@ -11,6 +11,7 @@ from threading import Event
 
 import shared.config as app_config
 from builder.builder import Builder
+from measure import TimeMeasurement
 from shared.data import AppConfiguration
 from uart.command import Command
 from uart.communicator import UartCommunicator
@@ -66,8 +67,7 @@ def _handle_uart_messages() -> None:
         logger.debug('Received UART message: %s', cmd)
 
         if cmd == Command.SEND_STATE:  # TODO (lorin): implement actual command
-            logger.info('Start signal received')
-            _start_new_run()
+            _start_run()
     except queue.Empty:
         pass
 
@@ -89,9 +89,10 @@ def _process_manager() -> None:
         uart_communicator.start(writer=True)
 
 
-def _start_new_run() -> None:
+def _start_run() -> None:
     """Starts a new run."""
     # pylint: disable=possibly-used-before-assignment
+    logger.info('Starting new run')
     while not builder_queue.empty() and not halt.is_set():
         builder_queue.get_nowait()
     while not uart_read.empty() and not halt.is_set():
@@ -99,9 +100,20 @@ def _start_new_run() -> None:
     while not uart_write.empty() and not halt.is_set():
         uart_write.get_nowait()
 
+    time_measurement.reset()
+    time_measurement.start()
     executor.submit(CubeApi.send_with_retry, api.post_start)
     builder.start()
     recognition_manager.start(recognition=True)
+
+
+def _stop_run() -> None:
+    """Stops the run."""
+    # pylint: disable=possibly-used-before-assignment
+    logger.info('Stopping run')
+    time_measurement.stop()
+    executor.submit(CubeApi.send_with_retry, api.post_end)
+    logger.info('Run completed in %.3fs', time_measurement.total_runtime())
 
 
 def main() -> None:
@@ -135,8 +147,9 @@ if __name__ == '__main__':
     uart_write: Queue = Queue()
 
     # Initialize processes
-    executor = ProcessPoolExecutor()
     api = CubeApi(config)
+    time_measurement = TimeMeasurement()
+    executor = ProcessPoolExecutor()
     builder = Builder(builder_queue, uart_write)
     recognition_manager = RecognitionManager(config, builder_queue)
     uart_communicator = UartCommunicator(config, uart_read, uart_write)
@@ -147,7 +160,7 @@ if __name__ == '__main__':
     main()
 
     # TODO (lorin): implement actual handling of end
-    api.send_with_retry(api.post_end)
+    _stop_run()
     api.send_with_retry(api.get_config)
 
     # Wait for processes to complete
