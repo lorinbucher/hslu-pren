@@ -14,6 +14,7 @@ from builder.builder import Builder
 from measure import TimeMeasurement
 from shared.data import AppConfiguration
 from uart.command import Command
+from uart.commandbuilder import CommandBuilder
 from uart.communicator import UartCommunicator
 from video.manager import RecognitionManager
 from web.api import CubeApi
@@ -103,6 +104,7 @@ def _start_run() -> None:
     time_measurement.reset()
     time_measurement.start()
     executor.submit(CubeApi.send_with_retry, api.post_start)
+    uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
     builder.start()
     recognition_manager.start(recognition=True)
 
