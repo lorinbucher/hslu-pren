@@ -22,13 +22,13 @@ class CommandBuilder:
         rotate = RotateGrid()
         rotate.degrees = deg
 
-        union = DataUnion()
-        union.rotate_grid = rotate
+        data = DataUnion()
+        data.rotate_grid = rotate
 
         cmd = Message()
         cmd.cmd = Command.ROTATE_GRID.value
         cmd.id = cls._generate_id()
-        cmd.data = union
+        cmd.data = data
         cmd.checksum = 12
         return cmd
 
@@ -40,36 +40,35 @@ class CommandBuilder:
         place.cubes_yellow = yellow
         place.cubes_blue = blue
 
-        union = DataUnion()
-        union.place_cubes = place
+        data = DataUnion()
+        data.place_cubes = place
 
         cmd = Message()
         cmd.cmd = Command.PLACE_CUBES.value
         cmd.id = cls._generate_id()
-        cmd.data = union
+        cmd.data = data
         cmd.checksum = 12
         return cmd
 
     @classmethod
     def move_lift(cls, state: MoveLift) -> Message:
         """Builds the command to move the lift."""
-        union = DataUnion()
-        union.move_lift = state.value
+        data = DataUnion()
+        data.move_lift = state.value
 
         cmd = Message()
         cmd.cmd = Command.MOVE_LIFT.value
         cmd.id = cls._generate_id()
-        cmd.data = union
+        cmd.data = data
         cmd.checksum = 12
         return cmd
 
     @classmethod
-    def other_command(cls, command: Command) -> Message:
-        """Builds other commands that don't require any data."""
-        union = DataUnion()
+    def other_command(cls, command: Command, data: DataUnion = DataUnion()) -> Message:
+        """Builds other commands with optional data."""
         cmd = Message()
         cmd.cmd = command.value
         cmd.id = cls._generate_id()
-        cmd.data = union
+        cmd.data = data
         cmd.checksum = 12
         return cmd

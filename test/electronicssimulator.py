@@ -3,7 +3,7 @@ import sys
 
 import serial
 
-from uart.command import Command, Message
+from uart.command import ButtonState, Command, DataUnion, Message
 from uart.commandbuilder import CommandBuilder
 
 
@@ -14,55 +14,43 @@ class ElectronicsSimulator:
         self._read_port = read_port
         self._write_port = write_port
 
-    def acknowledge(self) -> None:
-        """Sends an acknowledged message."""
-        command = CommandBuilder.other_command(Command.ACKNOWLEDGE)
-        self._write(command)
-
-    def not_acknowledge(self) -> None:
-        """Sends a not acknowledged message."""
-        command = CommandBuilder.other_command(Command.NOT_ACKNOWLEDGE)
-        self._write(command)
-
-    def checksum_error(self) -> None:
-        """Sends a checksum error message."""
-        command = CommandBuilder.other_command(Command.CRC_ERROR)
-        self._write(command)
-
-    def get_state(self) -> None:
-        """Sends a get state message."""
-        command = CommandBuilder.other_command(Command.GET_STATE)
-        self._write(command)
-
-    def send_state(self) -> None:
-        """Sends a send state message."""
-        command = CommandBuilder.other_command(Command.SEND_STATE)
-        self._write(command)
-
-    def disturb(self, data: bytes) -> None:
-        """Sends random data to disturb"""
-        self._write(data)
-
-    def simulate(self) -> None:
+    def run(self) -> None:
         """Simulates responses from the electronics controller."""
         while True:
             self._read()
-            command = int(input('1 ack, 2 nack, 3 crc, 7 get state, 8 send state, 9 disturb: '))
+            message: Message | bytes = b''
+            command = int(input('1 ack, 2 nack, 3 crc, 4 start, 5 state, 9 disturb: '))
             if command == 1:
-                self.acknowledge()
+                message = CommandBuilder.other_command(Command.ACKNOWLEDGE)
             elif command == 2:
-                self.not_acknowledge()
+                message = CommandBuilder.other_command(Command.NOT_ACKNOWLEDGE)
             elif command == 3:
-                self.checksum_error()
-            elif command == 7:
-                self.get_state()
-            elif command == 8:
-                self.send_state()
+                message = CommandBuilder.other_command(Command.CRC_ERROR)
+            elif command == 4:
+                message = self._send_io_state()
+            elif command == 5:
+                message = CommandBuilder.other_command(Command.CRC_ERROR)
             elif command == 9:
                 data = input('data: ')
-                self._write(data.encode('utf-8'))
+                message = data.encode('utf-8')
             else:
                 sys.exit(0)
+
+            self._write(message)
+
+    @staticmethod
+    def _send_io_state() -> Message:
+        """Creates the message for the send IO state command."""
+        data = DataUnion()
+        data.send_io_state.btn_start = ButtonState.LONG_CLICKED.value
+        data.send_io_state.btn_stop = ButtonState.RELEASED.value
+        return CommandBuilder.other_command(Command.SEND_IO_STATE, data)
+
+    @staticmethod
+    def _state() -> Message:
+        """Creates the message for the send state command."""
+        data = DataUnion()
+        return CommandBuilder.other_command(Command.SEND_STATE, data)
 
     def _read(self) -> None:
         """Reads data from the UART connection."""
@@ -92,5 +80,5 @@ if __name__ == '__main__':
     serial_read = input('Select UART read port: ')
     serial_write = input('Select UART write port: ')
 
-    sim = ElectronicsSimulator(serial_read, serial_write)
-    sim.simulate()
+    simulator = ElectronicsSimulator(serial_read, serial_write)
+    simulator.run()
