@@ -53,6 +53,14 @@ class SendState(Structure):
     ]
 
 
+class ButtonState(Enum):
+    """The data payload of the IO state buttons."""
+    RELEASED = 0
+    PRESSED = 1
+    SHORT_CLICKED = 2
+    LONG_CLICKED = 3
+
+
 class SendIOState(Structure):
     """The data payload of the send IO state command."""
     _fields_ = [
