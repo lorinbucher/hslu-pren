@@ -18,6 +18,7 @@ class Command(Enum):
     PAUSE_BUILD = 9
     RESUME_BUILD = 10
     PRIME_MAGAZINE = 11
+    SEND_IO_STATE = 12
 
 
 class RotateGrid(Structure):
@@ -52,6 +53,14 @@ class SendState(Structure):
     ]
 
 
+class SendIOState(Structure):
+    """The data payload of the send IO state command."""
+    _fields_ = [
+        ('btn_start', c_uint8),
+        ('btn_stop', c_uint8)
+    ]
+
+
 class DataUnion(Union):
     """The data payload for the UART message."""
     _fields_ = [
@@ -59,6 +68,7 @@ class DataUnion(Union):
         ('cmd_place_cubes', PlaceCubes),
         ('cmd_move_lift', c_uint8),
         ('cmd_send_state', SendState),
+        ('cmd_send_io_state', SendIOState),
         ('data_field', c_uint8 * 16)
     ]
 
