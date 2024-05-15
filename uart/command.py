@@ -64,11 +64,11 @@ class SendIOState(Structure):
 class DataUnion(Union):
     """The data payload for the UART message."""
     _fields_ = [
-        ('cmd_rotate_grid', RotateGrid),
-        ('cmd_place_cubes', PlaceCubes),
-        ('cmd_move_lift', c_uint8),
-        ('cmd_send_state', SendState),
-        ('cmd_send_io_state', SendIOState),
+        ('rotate_grid', RotateGrid),
+        ('place_cubes', PlaceCubes),
+        ('move_lift', c_uint8),
+        ('send_state', SendState),
+        ('send_io_state', SendIOState),
         ('data_field', c_uint8 * 16)
     ]
 
@@ -79,6 +79,6 @@ class Message(Structure):
     _fields_ = [
         ('cmd', c_uint8),
         ('id', c_uint8),
-        ('data_union', DataUnion),
+        ('data', DataUnion),
         ('checksum', c_uint8)
     ]

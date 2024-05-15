@@ -23,12 +23,12 @@ class CommandBuilder:
         rotate.degrees = deg
 
         union = DataUnion()
-        union.cmd_rotate_grid = rotate
+        union.rotate_grid = rotate
 
         cmd = Message()
         cmd.cmd = Command.ROTATE_GRID.value
         cmd.id = cls._generate_id()
-        cmd.data_union = union
+        cmd.data = union
         cmd.checksum = 12
         return cmd
 
@@ -41,12 +41,12 @@ class CommandBuilder:
         place.cubes_blue = blue
 
         union = DataUnion()
-        union.cmd_place_cubes = place
+        union.place_cubes = place
 
         cmd = Message()
         cmd.cmd = Command.PLACE_CUBES.value
         cmd.id = cls._generate_id()
-        cmd.data_union = union
+        cmd.data = union
         cmd.checksum = 12
         return cmd
 
@@ -54,12 +54,12 @@ class CommandBuilder:
     def move_lift(cls, state: MoveLift) -> Message:
         """Builds the command to move the lift."""
         union = DataUnion()
-        union.cmd_move_lift = state.value
+        union.move_lift = state.value
 
         cmd = Message()
         cmd.cmd = Command.MOVE_LIFT.value
         cmd.id = cls._generate_id()
-        cmd.data_union = union
+        cmd.data = union
         cmd.checksum = 12
         return cmd
 
@@ -70,6 +70,6 @@ class CommandBuilder:
         cmd = Message()
         cmd.cmd = command.value
         cmd.id = cls._generate_id()
-        cmd.data_union = union
+        cmd.data = union
         cmd.checksum = 12
         return cmd
