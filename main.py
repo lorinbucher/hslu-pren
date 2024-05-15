@@ -13,7 +13,7 @@ import shared.config as app_config
 from rebuilder.builder import Builder
 from rebuilder.measure import TimeMeasurement
 from shared.data import AppConfiguration
-from uart.command import Command
+from uart.command import ButtonState, Command
 from uart.commandbuilder import CommandBuilder
 from uart.communicator import UartCommunicator
 from video.manager import RecognitionManager
@@ -67,8 +67,12 @@ def _handle_uart_messages() -> None:
         cmd = Command(message.cmd)
         logger.debug('Received UART message: %s', cmd)
 
-        if cmd == Command.SEND_STATE:  # TODO (lorin): implement actual command
-            _start_run()
+        if cmd == Command.SEND_IO_STATE:
+            btn_start_state = ButtonState(message.data.send_io_state.btn_start)
+            if btn_start_state in (ButtonState.SHORT_CLICKED, ButtonState.LONG_CLICKED):
+                _start_run()
+    except ValueError as error:
+        logger.error('Failed to parse UART message: %s', error)
     except queue.Empty:
         pass
 
