@@ -10,8 +10,8 @@ from multiprocessing import Queue
 from threading import Event
 
 import shared.config as app_config
-from builder.builder import Builder
-from measure import TimeMeasurement
+from rebuilder.builder import Builder
+from rebuilder.measure import TimeMeasurement
 from shared.data import AppConfiguration
 from uart.command import Command
 from uart.commandbuilder import CommandBuilder

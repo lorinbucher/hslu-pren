@@ -2,7 +2,7 @@
 import unittest
 from multiprocessing import Queue
 
-from builder.builder import Builder, Layer
+from rebuilder.builder import Builder, Layer
 from shared.enumerations import CubeColor
 from uart.command import Command
 

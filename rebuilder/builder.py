@@ -20,7 +20,7 @@ class Builder:
     """Sends the commands using the UART communication protocol to build the detected cube configuration."""
 
     def __init__(self, builder_queue: Queue, uart_write: Queue) -> None:
-        self._logger = logging.getLogger('builder.builder')
+        self._logger = logging.getLogger('rebuilder.builder')
         self._halt = Event()
         self._builder_queue = builder_queue
         self._uart_write = uart_write
