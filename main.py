@@ -176,8 +176,7 @@ if __name__ == '__main__':
     recognition_manager.start(processing=True)
     main()
 
-    # TODO (lorin): implement actual handling of end
-    _stop_run()
+    # Get config from web API
     api.send_with_retry(api.get_config)
 
     # Wait for processes to complete
