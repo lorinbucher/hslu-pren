@@ -1,6 +1,6 @@
 """Defines the commands used for the UART communication protocol."""
 from _ctypes import Structure, Union
-from ctypes import c_int16, c_uint8
+from ctypes import c_float, c_int16, c_uint8
 from enum import Enum
 
 
@@ -19,6 +19,9 @@ class Command(Enum):
     RESUME_BUILD = 10
     PRIME_MAGAZINE = 11
     SEND_IO_STATE = 12
+    EXECUTION_FINISHED = 13
+    RESET_ENERGY_MEASUREMENT = 14
+    RESET_WERNI = 15
 
 
 class ButtonState(Enum):
@@ -27,6 +30,22 @@ class ButtonState(Enum):
     PRESSED = 1
     SHORT_CLICKED = 2
     LONG_CLICKED = 3
+
+
+class LiftState(Enum):
+    """The lift states."""
+    UNHOMED = 0
+    LIFT_UP = 1
+    LIFT_DOWN = 2
+
+
+class WerniState(Enum):
+    """The WERNI states."""
+    PREPARING = 0
+    READY = 1
+    BUILDING = 2
+    BUILD_PAUSED = 3
+    BUILD_ABORTED = 4
 
 
 class RotateGrid(Structure):
@@ -54,10 +73,9 @@ class MoveLift(Enum):
 class SendState(Structure):
     """The data payload of the send state command."""
     _fields_ = [
-        ('dummy1', c_uint8),
-        ('dummy2', c_uint8),
-        ('dummy3', c_uint8),
-        ('dummy4', c_uint8)
+        ('energy', c_float),
+        ('lift_state', c_uint8),
+        ('werni_state', c_uint8)
     ]
 
 
@@ -69,6 +87,14 @@ class SendIOState(Structure):
     ]
 
 
+class ExecFinished(Structure):
+    """The data payload of the execution finished command."""
+    _fields_ = [
+        ('cmd', c_uint8),
+        ('success', c_uint8)
+    ]
+
+
 class DataUnion(Union):
     """The data payload for the UART message."""
     _fields_ = [
@@ -77,6 +103,7 @@ class DataUnion(Union):
         ('move_lift', c_uint8),
         ('send_state', SendState),
         ('send_io_state', SendIOState),
+        ('exec_finished', ExecFinished),
         ('data_field', c_uint8 * 16)
     ]
 
