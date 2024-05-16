@@ -13,7 +13,7 @@ import shared.config as app_config
 from rebuilder.builder import Builder
 from rebuilder.measure import TimeMeasurement
 from shared.data import AppConfiguration
-from uart.command import ButtonState, Command, LiftState
+from uart.command import ButtonState, Command, LiftState, WerniState
 from uart.commandbuilder import CommandBuilder
 from uart.communicator import UartCommunicator
 from video.manager import RecognitionManager
@@ -75,9 +75,12 @@ def _handle_uart_messages() -> None:
             exec_finished_cmd = Command(message.data.exec_finished.cmd)
             logger.info('Finished command: %s', exec_finished_cmd)
         if cmd == Command.SEND_STATE:
+            energy = message.data.send_state.energy
             lift_state = LiftState(message.data.send_state.lift_state)
+            werni_state = WerniState(message.data.send_state.werni_state)
             if lift_state == LiftState.LIFT_DOWN:
                 _stop_run()
+            logger.info('State - energy: %s, lift: %s, werni: %s', energy, lift_state, werni_state)
     except ValueError as error:
         logger.error('Failed to parse UART message: %s', error)
     except queue.Empty:
