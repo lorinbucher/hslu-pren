@@ -109,6 +109,7 @@ def _start_run() -> None:
     time_measurement.start()
     executor.submit(CubeApi.send_with_retry, api.post_start)
     uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
+    uart_write.put(CommandBuilder.other_command(Command.RESET_ENERGY_MEASUREMENT))
     builder.start()
     recognition_manager.start(recognition=True)
 
