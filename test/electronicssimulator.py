@@ -3,7 +3,7 @@ import sys
 
 import serial
 
-from uart.command import ButtonState, Command, DataUnion, Message
+from uart.command import ButtonState, Command, DataUnion, LiftState, Message, WerniState
 from uart.commandbuilder import CommandBuilder
 
 
@@ -19,7 +19,7 @@ class ElectronicsSimulator:
         while True:
             self._read()
             message: Message | bytes = b''
-            command = int(input('1 ack, 2 nack, 3 crc, 4 start, 5 state, 9 disturb: '))
+            command = int(input('1 ack, 2 nack, 3 crc, 4 start, 5 finished, 6 state, 9 disturb: '))
             if command == 1:
                 message = CommandBuilder.other_command(Command.ACKNOWLEDGE)
             elif command == 2:
@@ -29,7 +29,9 @@ class ElectronicsSimulator:
             elif command == 4:
                 message = self._send_io_state()
             elif command == 5:
-                message = CommandBuilder.other_command(Command.CRC_ERROR)
+                message = self._exec_finished()
+            elif command == 6:
+                message = self._send_state()
             elif command == 9:
                 data = input('data: ')
                 message = data.encode('utf-8')
@@ -37,6 +39,15 @@ class ElectronicsSimulator:
                 sys.exit(0)
 
             self._write(message)
+
+    @staticmethod
+    def _send_state() -> Message:
+        """Creates the message for the send state command."""
+        data = DataUnion()
+        data.send_state.energy = 10.0
+        data.send_state.lift_state = LiftState.LIFT_DOWN.value
+        data.send_state.werni_state = WerniState.BUILDING.value
+        return CommandBuilder.other_command(Command.SEND_STATE, data)
 
     @staticmethod
     def _send_io_state() -> Message:
@@ -47,14 +58,15 @@ class ElectronicsSimulator:
         return CommandBuilder.other_command(Command.SEND_IO_STATE, data)
 
     @staticmethod
-    def _state() -> Message:
-        """Creates the message for the send state command."""
+    def _exec_finished() -> Message:
+        """Creates the message for the execution finished command."""
         data = DataUnion()
-        return CommandBuilder.other_command(Command.SEND_STATE, data)
+        data.exec_finished.cmd = Command.MOVE_LIFT.value
+        return CommandBuilder.other_command(Command.EXECUTION_FINISHED, data)
 
     def _read(self) -> None:
         """Reads data from the UART connection."""
-        ser = serial.Serial(self._read_port, 115200, timeout=5.0)
+        ser = serial.Serial(self._read_port, 115200, timeout=2.0)
         data = ser.read(23)
         if not data:
             return
