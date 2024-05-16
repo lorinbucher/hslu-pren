@@ -74,6 +74,8 @@ def _handle_uart_messages() -> None:
         if cmd == Command.EXECUTION_FINISHED:
             exec_finished_cmd = Command(message.data.exec_finished.cmd)
             logger.info('Finished command: %s', exec_finished_cmd)
+            if exec_finished_cmd == Command.MOVE_LIFT:
+                uart_write.put(CommandBuilder.other_command(Command.GET_STATE))
         if cmd == Command.SEND_STATE:
             energy = message.data.send_state.energy
             lift_state = LiftState(message.data.send_state.lift_state)

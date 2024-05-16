@@ -115,7 +115,6 @@ class Builder:
         self.build_layer(Layer.TOP)
         self._logger.info('Move lift down command queued')
         self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_DOWN))
-        self._uart_write.put(CommandBuilder.other_command(Command.GET_STATE))
 
     def build_layer(self, layer: Layer) -> None:
         """Builds a layer."""
