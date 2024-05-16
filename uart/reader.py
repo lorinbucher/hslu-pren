@@ -96,7 +96,7 @@ class UartReader:
             self._logger.debug('Received command: %s', command_type)
             if command_type in (Command.ACKNOWLEDGE, Command.NOT_ACKNOWLEDGE, Command.CRC_ERROR):
                 self._ack_queue.put(message)
-            elif command_type in (Command.SEND_STATE, Command.SEND_IO_STATE):
+            elif command_type in (Command.SEND_STATE, Command.SEND_IO_STATE, Command.EXECUTION_FINISHED):
                 self._read_queue.put(message)
             else:
                 self._logger.info('Unhandled command received: %s', command_type)
