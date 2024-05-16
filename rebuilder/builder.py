@@ -6,7 +6,7 @@ from multiprocessing import Event, Process, Queue
 
 from shared.data import CubeConfiguration
 from shared.enumerations import CubeColor
-from uart.command import Command, MoveLift
+from uart.command import MoveLift
 from uart.commandbuilder import CommandBuilder
 
 
