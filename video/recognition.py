@@ -24,7 +24,7 @@ class CubeRecognition:
         return None
 
     @staticmethod
-    def process_frame(frame: Any) -> CubeConfiguration:
+    def process_frame(frame: Any) -> list[CubeColor]:
         """Performs the cube image recognition on a single frame."""
         config = CubeConfiguration()
         if frame is not None:
@@ -36,4 +36,4 @@ class CubeRecognition:
             config.set_color(6, CubeColor.RED)
             config.set_color(7, CubeColor.YELLOW)
             config.set_color(8, CubeColor.NONE)
-        return config
+        return config.config
