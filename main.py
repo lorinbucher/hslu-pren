@@ -16,7 +16,7 @@ from shared.data import AppConfiguration
 from uart.command import ButtonState, Command, LiftState, WerniState
 from uart.commandbuilder import CommandBuilder
 from uart.communicator import UartCommunicator
-from video.manager import RecognitionManager
+from video.processing import StreamProcessing
 from web.api import CubeApi
 
 CONFIG_FILE = 'config.toml'
@@ -53,10 +53,10 @@ def _signal_handler(signum, _) -> None:
     # pylint: disable=possibly-used-before-assignment
     if signum in (signal.SIGINT, signal.SIGTERM) and multiprocessing.current_process().name == 'MainProcess':
         logger.info('Shutting down application')
-        uart_communicator.halt(reader=True, writer=True)
-        recognition_manager.halt(processing=True, recognition=True)
-        builder.halt()
         halt.set()
+        builder.halt()
+        stream_processing.halt()
+        uart_communicator.halt(reader=True, writer=True)
 
 
 def _handle_uart_messages() -> None:
@@ -82,7 +82,7 @@ def _handle_uart_messages() -> None:
             werni_state = WerniState(message.data.send_state.werni_state)
             if lift_state == LiftState.LIFT_DOWN:
                 _stop_run()
-            logger.info('State - energy: %s, lift: %s, werni: %s', energy, lift_state, werni_state)
+            logger.info('State - energy: %sWs, lift: %s, werni: %s', energy, lift_state, werni_state)
     except ValueError as error:
         logger.error('Failed to parse UART message: %s', error)
     except queue.Empty:
@@ -94,11 +94,8 @@ def _process_manager() -> None:
     # pylint: disable=possibly-used-before-assignment
     if not builder.halted() and not builder.alive():
         builder.start()
-
-    if not recognition_manager.halted(processing=True) and not recognition_manager.alive(processing=True):
-        recognition_manager.start(processing=True)
-    if not recognition_manager.halted(recognition=True) and not recognition_manager.alive(recognition=True):
-        recognition_manager.start(recognition=True)
+    if not stream_processing.halted() and not stream_processing.alive():
+        stream_processing.start()
 
     if not uart_communicator.halted(reader=True) and not uart_communicator.alive(reader=True):
         uart_communicator.start(reader=True)
@@ -123,7 +120,7 @@ def _start_run() -> None:
     uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
     uart_write.put(CommandBuilder.other_command(Command.RESET_ENERGY_MEASUREMENT))
     builder.start()
-    recognition_manager.start(recognition=True)
+    stream_processing.start_recognition()
 
 
 def _stop_run() -> None:
@@ -131,6 +128,7 @@ def _stop_run() -> None:
     # pylint: disable=possibly-used-before-assignment
     logger.info('Stopping run')
     time_measurement.stop()
+    stream_processing.stop_recognition()
     executor.submit(CubeApi.send_with_retry, api.post_end)
     logger.info('Run completed in %.3fs', time_measurement.total_runtime())
 
@@ -168,14 +166,14 @@ if __name__ == '__main__':
     # Initialize processes
     api = CubeApi(config)
     time_measurement = TimeMeasurement()
-    executor = ProcessPoolExecutor()
+    executor = ProcessPoolExecutor(max_workers=2)
     builder = Builder(builder_queue, uart_write)
-    recognition_manager = RecognitionManager(config, builder_queue)
+    stream_processing = StreamProcessing(config, builder_queue)
     uart_communicator = UartCommunicator(config, uart_read, uart_write)
 
     # Start initial processes
+    stream_processing.start()
     uart_communicator.start(reader=True, writer=True)
-    recognition_manager.start(processing=True)
     main()
 
     # Get config from web API
@@ -183,11 +181,11 @@ if __name__ == '__main__':
 
     # Wait for processes to complete
     builder.join()
-    recognition_manager.join(processing=True, recognition=True)
+    stream_processing.join()
     uart_communicator.join(reader=True, writer=True)
 
     # Stop processes
     executor.shutdown()
     builder.stop()
-    recognition_manager.stop(processing=True, recognition=True)
+    stream_processing.stop()
     uart_communicator.stop(reader=True, writer=True)

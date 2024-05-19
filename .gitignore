@@ -164,3 +164,6 @@ cython_debug/
 
 # Fleet
 .fleet/
+
+# MacOS
+.DS_Store

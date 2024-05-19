@@ -1,74 +1,39 @@
 """Implements the cube image recognition module."""
-import logging
-import queue
-from multiprocessing import Process, Queue
-from multiprocessing.synchronize import Event
+from typing import Any
 
-from shared.data import AppConfiguration, CubeConfiguration
+from shared.data import CubeConfiguration
 from shared.enumerations import CubeColor
-from web.api import CubeApi
+
+FRAME_CROP_X = 400
+FRAME_CROP_Y = 0
+FRAME_CROP_W = 500
+FRAME_CROP_H = 400
 
 
 class CubeRecognition:
-    """Performs the cube image recognition."""
+    """Provides functions to run the cube image recognition."""
 
-    def __init__(self, app_config: AppConfiguration, halt: Event, builder_queue: Queue, process_queue: Queue):
-        self._logger = logging.getLogger('video.cube_recognition')
-        self._app_config = app_config
-        self._halt = halt
-        self._builder_queue = builder_queue
-        self._process_queue = process_queue
+    def __init__(self):
+        pass
 
-        self._process: Process | None = None
-        self._cube_config = CubeConfiguration()
+    @staticmethod
+    def crop_frame(frame: Any) -> Any:
+        """Crops the frame to the region of interest to reduce processing load."""
+        if frame is not None:
+            return frame[FRAME_CROP_Y:FRAME_CROP_Y + FRAME_CROP_H, FRAME_CROP_X:FRAME_CROP_X + FRAME_CROP_W]
+        return None
 
-    def start(self) -> None:
-        """Starts the cube image recognition."""
-        self._logger.info('Starting cube image recognition')
-        self._cube_config.reset()
-        self._process = Process(target=self._run)
-        self._process.start()
-        self._logger.info('Cube image recognition started')
-
-    def join(self) -> None:
-        """Waits for the cube image recognition to complete."""
-        if self._process is not None:
-            self._logger.info('Waiting for cube image recognition to complete')
-            self._process.join()
-            self._logger.info('Cube image recognition completed')
-
-    def stop(self) -> None:
-        """Stops the cube image recognition."""
-        if self._process is not None:
-            self._logger.info('Stopping cube image recognition')
-            self._process.close()
-            self._process = None
-            self._logger.info('Cube image recognition stopped')
-
-    def alive(self) -> bool:
-        """Returns true if the cube image recognition process is alive, false if not."""
-        result = self._process is not None and self._process.is_alive()
-        if not result:
-            self._logger.warning('Cube image recognition not alive')
-        return result
-
-    def _run(self) -> None:
-        """Runs the cube image recognition process."""
-        self._logger.info('Cube image recognition process started')
-        counter = 0
-        while not self._halt.is_set():
-            try:
-                data = self._process_queue.get(block=True, timeout=2.0)
-                self._logger.debug('Received data from video processing: %s', type(data))
-                self._cube_config.set_color(counter, CubeColor.NONE)
-                counter += 1
-                self._builder_queue.put(self._cube_config)
-                if self._cube_config.completed():
-                    self._logger.info('Cube image recognition completed: %s', self._cube_config.to_dict())
-                    self._halt.set()
-            except queue.Empty:
-                self._logger.warning('Video stream processing queue is empty')
-
-        self._logger.info('Sending cube configuration to web api')
-        CubeApi.send_with_retry(CubeApi(self._app_config).post_config, self._cube_config)
-        self._logger.info('Cube image recognition process stopped')
+    @staticmethod
+    def process_frame(frame: Any) -> CubeConfiguration:
+        """Performs the cube image recognition on a single frame."""
+        config = CubeConfiguration()
+        if frame is not None:
+            config.set_color(1, CubeColor.BLUE)
+            config.set_color(2, CubeColor.RED)
+            config.set_color(3, CubeColor.YELLOW)
+            config.set_color(4, CubeColor.NONE)
+            config.set_color(5, CubeColor.BLUE)
+            config.set_color(6, CubeColor.RED)
+            config.set_color(7, CubeColor.YELLOW)
+            config.set_color(8, CubeColor.NONE)
+        return config
