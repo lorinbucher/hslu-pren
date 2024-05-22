@@ -25,6 +25,7 @@ class Builder:
         self._builder_queue = builder_queue
         self._uart_write = uart_write
         self._halt.set()
+        self.rotated = 0
 
         self._process: Process | None = None
         self._config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED,
@@ -113,6 +114,7 @@ class Builder:
         """Builds the bottom and top layer of the configuration."""
         self.build_layer(Layer.BOTTOM)
         self.build_layer(Layer.TOP)
+        self.rotate_grid(4 - self.rotated, rotate_pos=True)
         self._logger.info('Move lift down command queued')
         self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_DOWN))
 
@@ -173,6 +175,7 @@ class Builder:
             angle = times * 90
             self._logger.info('Rotating grid command queued: %s°', angle)
             self._uart_write.put(CommandBuilder.rotate_grid(angle))
+            self.rotated = self.rotated + times % 4
             if rotate_pos:
                 self.move_pos(times)
 
