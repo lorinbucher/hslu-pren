@@ -345,3 +345,169 @@ class TestBuildAlgorithm(unittest.TestCase):
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.MOVE_LIFT)
         self.assertEqual(message.data.move_lift, 1)
+
+    def test_build2_3(self):
+        uart_write = Queue()
+        builder = Builder(Queue(), uart_write)
+
+        builder.set_config([CubeColor.RED, CubeColor.UNKNOWN, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED])
+        #pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
+
+        builder.build_whats_possible()
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, 90)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 1)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 0)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 0)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, 90)
+        
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 1)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 0)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 0)
+
+        builder.set_config([CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED])
+        builder.build_whats_possible()
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 1)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 0)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 0)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, -90)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 1)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 0)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 0)
+
+        # Ab hier kann er dann die gelben noch setzen
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 0)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 1)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 0)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 0)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 1)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 0)
+
+        builder.finish_build()
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, -90)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.MOVE_LIFT)
+        self.assertEqual(message.data.move_lift, 1)
+
+    def test_build2_with_doubles_first(self):
+        uart_write = Queue()
+        builder = Builder(Queue(), uart_write)
+
+        builder.set_config([CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED])
+        #pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
+
+        builder.build2(True)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, 90)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 2)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 2)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 0)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, 90)
+        
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 2)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 0)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 0)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, 180)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.MOVE_LIFT)
+        self.assertEqual(message.data.move_lift, 1)
+
+    def test_build2_with_doubles_first2(self):
+        uart_write = Queue()
+        builder = Builder(Queue(), uart_write)
+
+        builder.set_config([CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.BLUE, CubeColor.NONE, CubeColor.RED])
+        #pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
+
+        builder.build2(True)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, 90)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 2)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 0)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 0)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, 90)
+        
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 2)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 0)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 0)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, -90)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 0)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 1)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 0)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, 90)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
+        self.assertEqual(message.data.place_cubes.cubes_red, 0)
+        self.assertEqual(message.data.place_cubes.cubes_yellow, 0)
+        self.assertEqual(message.data.place_cubes.cubes_blue, 1)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
+        self.assertEqual(message.data.rotate_grid.degrees, 180)
+
+        message = uart_write.get(timeout=2.0)
+        self.assertEqual(Command(message.cmd), Command.MOVE_LIFT)
+        self.assertEqual(message.data.move_lift, 1)
