@@ -49,16 +49,18 @@ class Builder:
 
     def build2(self) -> None:
         """Builds the bottom and top layer of the configuration."""
-        while (not self.everything_known_placed()):
+        while True:
             self.update_cube_states()
             self.place_not_placed()
+            if (self.everything_known_placed()):
+                break
         self.rotate_grid(4 - self.rotated, rotate_pos=True)
         self._logger.info('Move lift down command queued')
         self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_DOWN))
 
     def everything_known_placed(self):
         for state in self._cube_states:
-            if state != CubeState.PLACED:
+            if state == CubeState.NOTPLACED:
                 return False
         return True
 
