@@ -191,13 +191,12 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertEqual([CubeColor.NONE, CubeColor.NONE, CubeColor.NONE, CubeColor.RED], config)
 
     def test_config_none(self):
-        builder = Builder(Queue(), Queue())
-        self.assertEqual(True, Builder.config_None([CubeColor.NONE, CubeColor.NONE, CubeColor.NONE, CubeColor.NONE]))
+        self.assertEqual(True, Builder.config_none([CubeColor.NONE, CubeColor.NONE, CubeColor.NONE, CubeColor.NONE]))
 
     def test_build_config1(self):
         uart_write = Queue()
         builder = Builder(Queue(), uart_write)
-        
+
         builder.build_config([CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE])
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
@@ -252,14 +251,18 @@ class TestBuildAlgorithm(unittest.TestCase):
     def test_update_cube_state(self):
         builder = Builder(Queue(), Queue())
         builder.update_cube_states()
-        self.assertEqual([CubeState.NOTPLACED, CubeState.NOTPLACED, CubeState.PLACED, CubeState.NOTPLACED, CubeState.NOTPLACED, CubeState.NOTPLACED, CubeState.PLACED, CubeState.NOTPLACED], builder._cube_states)
+        self.assertEqual(
+            [CubeState.NOTPLACED, CubeState.NOTPLACED, CubeState.PLACED, CubeState.NOTPLACED, CubeState.NOTPLACED,
+             CubeState.NOTPLACED, CubeState.PLACED, CubeState.NOTPLACED], builder.cube_states)
 
     def test_build2_1(self):
         uart_write = Queue()
         builder = Builder(Queue(), uart_write)
 
-        builder.set_config([CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.NONE, CubeColor.NONE, CubeColor.NONE, CubeColor.NONE])
-        #pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
+        builder.set_config(
+            [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.NONE, CubeColor.NONE,
+             CubeColor.NONE, CubeColor.NONE])
+        # pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
 
         builder.build2()
 
@@ -291,14 +294,14 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertEqual(Command(message.cmd), Command.MOVE_LIFT)
         self.assertEqual(message.data.move_lift, 1)
 
-    
-
     def test_build2_2(self):
         uart_write = Queue()
         builder = Builder(Queue(), uart_write)
 
-        builder.set_config([CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED])
-        #pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
+        builder.set_config(
+            [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW,
+             CubeColor.NONE, CubeColor.RED])
+        # pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
 
         builder.build2()
 
@@ -350,8 +353,10 @@ class TestBuildAlgorithm(unittest.TestCase):
         uart_write = Queue()
         builder = Builder(Queue(), uart_write)
 
-        builder.set_config([CubeColor.RED, CubeColor.UNKNOWN, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED])
-        #pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
+        builder.set_config(
+            [CubeColor.RED, CubeColor.UNKNOWN, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW,
+             CubeColor.NONE, CubeColor.RED])
+        # pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
 
         builder.build_whats_possible()
 
@@ -368,14 +373,16 @@ class TestBuildAlgorithm(unittest.TestCase):
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
         self.assertEqual(message.data.rotate_grid.degrees, 90)
-        
+
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
         self.assertEqual(message.data.place_cubes.cubes_red, 1)
         self.assertEqual(message.data.place_cubes.cubes_yellow, 0)
         self.assertEqual(message.data.place_cubes.cubes_blue, 0)
 
-        builder.set_config([CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED])
+        builder.set_config(
+            [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW,
+             CubeColor.NONE, CubeColor.RED])
         builder.build_whats_possible()
 
         message = uart_write.get(timeout=2.0)
@@ -422,8 +429,10 @@ class TestBuildAlgorithm(unittest.TestCase):
         uart_write = Queue()
         builder = Builder(Queue(), uart_write)
 
-        builder.set_config([CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED])
-        #pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
+        builder.set_config(
+            [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW,
+             CubeColor.NONE, CubeColor.RED])
+        # pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
 
         builder.build2(True)
 
@@ -440,7 +449,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
         self.assertEqual(message.data.rotate_grid.degrees, 90)
-        
+
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
         self.assertEqual(message.data.place_cubes.cubes_red, 2)
@@ -459,8 +468,10 @@ class TestBuildAlgorithm(unittest.TestCase):
         uart_write = Queue()
         builder = Builder(Queue(), uart_write)
 
-        builder.set_config([CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.BLUE, CubeColor.NONE, CubeColor.RED])
-        #pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
+        builder.set_config(
+            [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.BLUE,
+             CubeColor.NONE, CubeColor.RED])
+        # pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
 
         builder.build2(True)
 
@@ -477,7 +488,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
         self.assertEqual(message.data.rotate_grid.degrees, 90)
-        
+
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
         self.assertEqual(message.data.place_cubes.cubes_red, 2)

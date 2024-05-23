@@ -15,10 +15,12 @@ class Layer(Enum):
     BOTTOM = 0
     TOP = 4
 
+
 class CubeState(Enum):
     UNKNOWN = 0
     NOTPLACED = 1
     PLACED = 2
+
 
 class Builder:
     """Sends the commands using the UART communication protocol to build the detected cube configuration."""
@@ -39,19 +41,11 @@ class Builder:
 
         self._cube_states = [CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN,
                              CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN]
-        
-
-    # Wenn etwas unknown ist, baut es alles auf was es kann und am ende der queue macht er dann noch das unknown (wenn es bloed gelegen ist kann es evt laenger dauern)
-    # Wenn ein qube auf nichts erkennt wird, dann faellt er einfach hinunter
-    # Buildalgorithmus komplett umgeschrieben. Man kann die unbenutzten methoden loeschen
-    # Wenn zwei wuerfel auf einanader die gleiche farbe haben ist er evt nicht ganz so schnell
-    # Annahme: ich erhalte die config ueber das set config damit ich nichts auf ein unknown setze
-
 
     def set_config(self, config):
         for i in range(4):
             if config[i] == CubeColor.UNKNOWN:
-                config[i+4] = CubeColor.UNKNOWN
+                config[i + 4] = CubeColor.UNKNOWN
         self._config = config
 
     def build2(self, build_doubles_first: bool = False) -> None:
@@ -62,10 +56,10 @@ class Builder:
     def build_doubles(self):
         config = [CubeColor.NONE, CubeColor.NONE, CubeColor.NONE, CubeColor.NONE]
         for i in range(4):
-            if self._config[i] == self._config[i+4] and self._config[i] != CubeColor.UNKNOWN:
+            if self._config[i] == self._config[i + 4] and self._config[i] != CubeColor.UNKNOWN:
                 config[i] = self._config[i]
                 self._cube_states[i] = CubeState.PLACED
-                self._cube_states[i+4] = CubeState.PLACED
+                self._cube_states[i + 4] = CubeState.PLACED
         self.build_config(config, True)
 
     def build_whats_possible(self):
@@ -73,7 +67,7 @@ class Builder:
         while True:
             self.update_cube_states()
             self.place_not_placed()
-            if (self.everything_known_placed()):
+            if self.everything_known_placed():
                 break
 
     def finish_build(self):
@@ -90,28 +84,28 @@ class Builder:
     def place_not_placed(self):
         config = [CubeColor.NONE, CubeColor.NONE, CubeColor.NONE, CubeColor.NONE]
         for i in range(4):
-            if (self._cube_states[i] == CubeState.NOTPLACED):
+            if self._cube_states[i] == CubeState.NOTPLACED:
                 config[i] = self._config[i]
                 self._cube_states[i] = CubeState.PLACED
-            elif (i + 4 < 8 and self._cube_states[i+4] == CubeState.NOTPLACED):
-                config[i] = self._config[i+4]
-                self._cube_states[i+4] = CubeState.PLACED
+            elif i + 4 < 8 and self._cube_states[i + 4] == CubeState.NOTPLACED:
+                config[i] = self._config[i + 4]
+                self._cube_states[i + 4] = CubeState.PLACED
         self.build_config(config)
 
     def update_cube_states(self):
         for i in range(len(self._config)):
             config = self._config[i]
-            if  config == CubeColor.NONE:
+            if config == CubeColor.NONE:
                 self._cube_states[i] = CubeState.PLACED
-            elif ((config == CubeColor.RED or config == CubeColor.BLUE or config == CubeColor.YELLOW) and self._cube_states[i] == CubeState.UNKNOWN):
+            elif ((config == CubeColor.RED or config == CubeColor.BLUE or config == CubeColor.YELLOW) and
+                  self._cube_states[i] == CubeState.UNKNOWN):
                 self._cube_states[i] = CubeState.NOTPLACED
 
-
     # Neues kann erst nach dem Build config gemacht werden
-    def build_config(self, initial_config, twoCubes :bool=False):
+    def build_config(self, initial_config, two_cubes: bool = False):
         """Builds a config."""
         config = initial_config.copy()
-        while not Builder.config_None(config):
+        while not Builder.config_none(config):
             c, config = self.match_with_config(config)
             times = 0
             while Builder.array_false(c):
@@ -119,15 +113,16 @@ class Builder:
                 self.move_pos(1)
                 c, config = self.match_with_config(config)
             self.rotate_grid(times, rotate_pos=False)
-            self.place_cubes(c, twoCubes)
+            self.place_cubes(c, two_cubes)
 
-    def config_None(config):
+    @staticmethod
+    def config_none(config):
         for c in config:
             if c != CubeColor.NONE:
                 return False
         return True
 
-    def match_with_config(self, config) -> list[bool]:
+    def match_with_config(self, config) -> tuple[list[bool], list[CubeColor]]:
         """Returns a list of matches between the configuration and the current position."""
         c = [False, False, False, False]
         new_config = config.copy()
@@ -208,13 +203,18 @@ class Builder:
         self._pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
 
     @property
+    def cube_states(self) -> list[CubeState]:
+        """Returns the cube states."""
+        return self._cube_states.copy()
+
+    @property
     def placed(self) -> list[bool]:
         """Returns the placed config"""
         return self._placed.copy()
 
     @property
     def pos(self) -> list[CubeColor]:
-        """Returns the current position"""
+        """Returns the current position."""
         return self._pos.copy()
 
     def build(self) -> None:
@@ -258,7 +258,7 @@ class Builder:
                 c[i] = True
         return c
 
-    def place_cubes(self, conf: list[bool], two_cubes: bool=False) -> None:
+    def place_cubes(self, conf: list[bool], two_cubes: bool = False) -> None:
         """Sends the command to place the cubes."""
         c = conf
         red = 0
