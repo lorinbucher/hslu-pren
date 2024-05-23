@@ -49,7 +49,8 @@ class Builder:
         self._config = config
 
     def build2(self, build_doubles_first: bool = False) -> None:
-        if build_doubles_first: self.build_doubles()
+        if build_doubles_first:
+            self.build_doubles()
         self.build_whats_possible()
         self.finish_build()
 
@@ -188,7 +189,7 @@ class Builder:
                 if config.completed():
                     self._logger.info('Received complete configuration: %s', config.to_dict())
                     self._config = config.config
-                    self.build()
+                    self.build2(build_doubles_first=True)
                     self._halt.set()
             except queue.Empty:
                 continue
