@@ -16,6 +16,12 @@ class Layer(Enum):
     TOP = 4
 
 
+class CubeState(Enum):
+    UNKNOWN = 0
+    NOTPLACED = 1
+    PLACED = 2
+
+
 class Builder:
     """Sends the commands using the UART communication protocol to build the detected cube configuration."""
 
@@ -25,12 +31,109 @@ class Builder:
         self._builder_queue = builder_queue
         self._uart_write = uart_write
         self._halt.set()
+        self.rotated = 0
 
         self._process: Process | None = None
         self._config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED,
                         CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
         self._placed = [False, False, False, False, False, False, False, False]
         self._pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
+
+        self._cube_states = [CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN,
+                             CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN]
+
+    def set_config(self, config):
+        for i in range(4):
+            if config[i] == CubeColor.UNKNOWN:
+                config[i + 4] = CubeColor.UNKNOWN
+        self._config = config
+
+    def build2(self, build_doubles_first: bool = False) -> None:
+        if build_doubles_first: self.build_doubles()
+        self.build_whats_possible()
+        self.finish_build()
+
+    def build_doubles(self):
+        config = [CubeColor.NONE, CubeColor.NONE, CubeColor.NONE, CubeColor.NONE]
+        for i in range(4):
+            if self._config[i] == self._config[i + 4] and self._config[i] != CubeColor.UNKNOWN:
+                config[i] = self._config[i]
+                self._cube_states[i] = CubeState.PLACED
+                self._cube_states[i + 4] = CubeState.PLACED
+        self.build_config(config, True)
+
+    def build_whats_possible(self):
+        """Builds the bottom and top layer of the configuration."""
+        while True:
+            self.update_cube_states()
+            self.place_not_placed()
+            if self.everything_known_placed():
+                break
+
+    def finish_build(self):
+        self.rotate_grid(4 - self.rotated, rotate_pos=True)
+        self._logger.info('Move lift down command queued')
+        self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_DOWN))
+
+    def everything_known_placed(self):
+        for state in self._cube_states:
+            if state == CubeState.NOTPLACED:
+                return False
+        return True
+
+    def place_not_placed(self):
+        config = [CubeColor.NONE, CubeColor.NONE, CubeColor.NONE, CubeColor.NONE]
+        for i in range(4):
+            if self._cube_states[i] == CubeState.NOTPLACED:
+                config[i] = self._config[i]
+                self._cube_states[i] = CubeState.PLACED
+            elif i + 4 < 8 and self._cube_states[i + 4] == CubeState.NOTPLACED:
+                config[i] = self._config[i + 4]
+                self._cube_states[i + 4] = CubeState.PLACED
+        self.build_config(config)
+
+    def update_cube_states(self):
+        for i in range(len(self._config)):
+            config = self._config[i]
+            if config == CubeColor.NONE:
+                self._cube_states[i] = CubeState.PLACED
+            elif ((config == CubeColor.RED or config == CubeColor.BLUE or config == CubeColor.YELLOW) and
+                  self._cube_states[i] == CubeState.UNKNOWN):
+                self._cube_states[i] = CubeState.NOTPLACED
+
+    # Neues kann erst nach dem Build config gemacht werden
+    def build_config(self, initial_config, two_cubes: bool = False):
+        """Builds a config."""
+        config = initial_config.copy()
+        while not Builder.config_none(config):
+            c, config = self.match_with_config(config)
+            times = 0
+            while Builder.array_false(c):
+                times += 1
+                self.move_pos(1)
+                c, config = self.match_with_config(config)
+            self.rotate_grid(times, rotate_pos=False)
+            self.place_cubes(c, two_cubes)
+
+    @staticmethod
+    def config_none(config):
+        for c in config:
+            if c != CubeColor.NONE:
+                return False
+        return True
+
+    def match_with_config(self, config) -> tuple[list[bool], list[CubeColor]]:
+        """Returns a list of matches between the configuration and the current position."""
+        c = [False, False, False, False]
+        new_config = config.copy()
+        for i in range(len(c)):
+            value = config[i]
+            if self._pos[i] == value and not value == CubeColor.NONE:
+                c[i] = True
+                new_config[i] = CubeColor.NONE
+            else:
+                new_config[i] = value
+        return c, new_config
 
     def start(self) -> None:
         """Starts the builder."""
@@ -100,19 +203,25 @@ class Builder:
         self._pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
 
     @property
+    def cube_states(self) -> list[CubeState]:
+        """Returns the cube states."""
+        return self._cube_states.copy()
+
+    @property
     def placed(self) -> list[bool]:
         """Returns the placed config"""
         return self._placed.copy()
 
     @property
     def pos(self) -> list[CubeColor]:
-        """Returns the current position"""
+        """Returns the current position."""
         return self._pos.copy()
 
     def build(self) -> None:
         """Builds the bottom and top layer of the configuration."""
         self.build_layer(Layer.BOTTOM)
         self.build_layer(Layer.TOP)
+        self.rotate_grid(4 - self.rotated, rotate_pos=True)
         self._logger.info('Move lift down command queued')
         self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_DOWN))
 
@@ -149,7 +258,7 @@ class Builder:
                 c[i] = True
         return c
 
-    def place_cubes(self, conf: list[bool]) -> None:
+    def place_cubes(self, conf: list[bool], two_cubes: bool = False) -> None:
         """Sends the command to place the cubes."""
         c = conf
         red = 0
@@ -164,6 +273,10 @@ class Builder:
                 elif self._pos[i] == CubeColor.BLUE:
                     blue = 1
         if (red + yellow + blue) > 0:
+            if two_cubes:
+                red = red * 2
+                yellow = yellow * 2
+                blue = blue * 2
             self._logger.info('Place cubes command queued - red: %s, yellow: %s, blue: %s', red, yellow, blue)
             self._uart_write.put(CommandBuilder.place_cubes(red, yellow, blue))
 
@@ -173,6 +286,7 @@ class Builder:
             angle = times * 90
             self._logger.info('Rotating grid command queued: %s°', angle)
             self._uart_write.put(CommandBuilder.rotate_grid(angle))
+            self.rotated = self.rotated + times % 4
             if rotate_pos:
                 self.move_pos(times)
 
