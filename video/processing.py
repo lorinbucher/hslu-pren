@@ -141,7 +141,9 @@ class StreamProcessing:
 
         if changed:
             self._logger.info('Cube configuration changed: %s', self._cube_config.to_dict())
-            self._builder_queue.put(self._cube_config)
+            config = CubeConfiguration()
+            config.config = self._cube_config.config
+            self._builder_queue.put(config)
             if self._cube_config.completed():
                 self._logger.info('Cube configuration completed')
                 self.stop_recognition()
