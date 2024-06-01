@@ -1,0 +1,14 @@
+[Unit]
+Description=PREN 3D Re-Builder Application
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+WorkingDirectory=/opt/pren
+ExecStart=/opt/pren/venv/bin/python3 /opt/pren/main.py
+RestartSec=5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

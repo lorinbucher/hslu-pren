@@ -12,19 +12,29 @@
 
 ## Installation
 
+Clone the git repository and move it to `/opt/pren`:
+
+```shell
+git clone https://<PAT>@github.com/lorinbucher/hslu-pren.git
+sudo mv hslu-pren /opt/pren
+sudo chown ${USER}:${USER} /opt/pren
+```
+
+Initialize a virtual python environment and install the necessary dependencies:
+
 ```shell
 # create virtual environment
-python3 -m venv venv
+python3 -m venv /opt/pren/venv
 # initialize virtual environment
-source venv/bin/activate
+source /opt/pren/venv/bin/activate
 # install dependencies
-python3 -m pip install -r requirements.txt
+python3 -m pip install -r /opt/pren/requirements.txt
 ```
 
 ## Configuration
 
 ```toml
-# config.toml
+# /opt/pren/config.toml
 [api]
 address = "oawz3wjih1.execute-api.eu-central-1.amazonaws.com"
 team_nr = "03"
@@ -48,9 +58,20 @@ recognition_timeout = 60
 
 ## Deployment
 
+The 3D Re-Builder application is deployed with `systemd`:
+
 ```shell
-source venv/bin/activate
-python3 main.py
+sudo mkdir -p /usr/local/lib/systemd/system
+sudo cp /opt/pren/pren-rebuilder.service /usr/local/lib/systemd/system
+sudo systemctl daemon-reload
+sudo systemctl enable pren-rebuilder.service
+sudo systemctl start pren-rebuilder.service
+```
+
+The application logs can be accessed using `journalctl`:
+
+```shell
+sudo journalctl -u pren-rebuilder.service -f
 ```
 
 ## Development
