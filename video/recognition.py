@@ -80,15 +80,6 @@ class CubeRecognition:
             config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (300, 300)), 2, offset)
             config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (300, 100)), 7, offset)
             config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (200, 100)), 8, offset)
-
-        # if frame is not None:
-        #     config.set_color(np.random.randint(5, 9), CubeColor.NONE)
-        #     config.set_color(np.random.randint(1, 9), CubeColor.BLUE)
-        #     config.set_color(np.random.randint(1, 9), CubeColor.RED)
-        #     config.set_color(np.random.randint(1, 9), CubeColor.YELLOW)
-        #     config.set_color(np.random.randint(1, 9), CubeColor.BLUE)
-        #     config.set_color(np.random.randint(1, 9), CubeColor.RED)
-        #     config.set_color(np.random.randint(1, 9), CubeColor.YELLOW)
         return config.config
 
     @staticmethod

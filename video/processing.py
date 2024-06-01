@@ -9,6 +9,7 @@ import cv2
 
 from shared.data import AppConfiguration, CubeConfiguration
 from shared.enumerations import CubeColor
+from web.api import CubeApi
 from .recognition import CubeRecognition
 
 
@@ -146,5 +147,6 @@ class StreamProcessing:
             self._builder_queue.put(cube_config)
             if self._cube_config.completed():
                 self._logger.info('Cube configuration completed')
-                # TODO (lorin): send request to api
                 self.stop_recognition()
+                cube_api = CubeApi(self._app_config)
+                cube_api.post_config(cube_config)
