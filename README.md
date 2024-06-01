@@ -39,7 +39,8 @@ password = "<password>"
 profile = "<pren_profile_small|pren_profile_med>"
 
 [app]
-confidence = 100
+confidence = 25
+recognition_timeout = 60
 serial_read = "/dev/ttyAMA0"
 serial_write = "/dev/ttyAMA0"
 ```

@@ -15,8 +15,8 @@ class UartCommunicator:
         self._halt_reader = Event()
         self._halt_writer = Event()
         self._ack_queue: Queue = Queue()
-        self._reader = UartReader(app_config.serial_read, self._halt_reader, self._ack_queue, read_queue)
-        self._writer = UartWriter(app_config.serial_write, self._halt_writer, self._ack_queue, write_queue)
+        self._reader = UartReader(app_config.app_serial_read, self._halt_reader, self._ack_queue, read_queue)
+        self._writer = UartWriter(app_config.app_serial_write, self._halt_writer, self._ack_queue, write_queue)
         self._halt_reader.set()
         self._halt_writer.set()
 

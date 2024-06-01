@@ -18,8 +18,9 @@ class AppConfiguration:
     rtsp_profile: str = ''
 
     app_confidence: int = 0
-    serial_read: str = ''
-    serial_write: str = ''
+    app_recognition_timeout: int = 60
+    app_serial_read: str = ''
+    app_serial_write: str = ''
 
     def from_dict(self, data: dict) -> None:
         """Reads the app configuration from a dictionary."""
@@ -34,13 +35,14 @@ class AppConfiguration:
         self.rtsp_profile = data.get('rtsp', {}).get('profile', '')
 
         self.app_confidence = data.get('app', {}).get('confidence', 0)
-        self.serial_read = data.get('app', {}).get('serial_read', '')
-        self.serial_write = data.get('app', {}).get('serial_write', '')
+        self.app_recognition_timeout = data.get('app', {}).get('recognition_timeout', 0)
+        self.app_serial_read = data.get('app', {}).get('serial_read', '')
+        self.app_serial_write = data.get('app', {}).get('serial_write', '')
 
     def validate(self) -> tuple[bool, str]:
         """Validates the configuration of the application."""
         for key, value in self.__dict__.items():
-            if key == 'app_confidence':
+            if key in ('app_confidence', 'app_recognition_timeout'):
                 result = isinstance(value, int) and value > 0
             else:
                 result = isinstance(value, str) and bool(value.strip())
