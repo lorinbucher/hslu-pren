@@ -7,42 +7,44 @@ from shared.enumerations import CubeColor
 @dataclass
 class AppConfiguration:
     """The configuration for the application."""
-    auth_team_nr: str = ''
-    auth_token: str = ''
+    api_address: str = ''
+    api_team_nr: str = ''
+    api_token: str = ''
 
-    server_api_address: str = ''
-    server_rtsp_address: str = ''
-
+    rtsp_address: str = ''
     rtsp_user: str = ''
     rtsp_password: str = ''
     rtsp_profile: str = ''
 
+    serial_baud_rate: int = 0
+    serial_read: str = ''
+    serial_write: str = ''
+
     app_confidence: int = 0
-    app_recognition_timeout: int = 60
-    app_serial_read: str = ''
-    app_serial_write: str = ''
+    app_recognition_timeout: int = 0
 
     def from_dict(self, data: dict) -> None:
         """Reads the app configuration from a dictionary."""
-        self.auth_team_nr = data.get('auth', {}).get('team_nr', '')
-        self.auth_token = data.get('auth', {}).get('token', '')
+        self.api_address = data.get('api', {}).get('address', '')
+        self.api_team_nr = data.get('api', {}).get('team_nr', '')
+        self.api_token = data.get('api', {}).get('token', '')
 
-        self.server_api_address = data.get('server', {}).get('api_address', '')
-        self.server_rtsp_address = data.get('server', {}).get('rtsp_address', '')
-
+        self.rtsp_address = data.get('rtsp', {}).get('address', '')
         self.rtsp_user = data.get('rtsp', {}).get('user', '')
         self.rtsp_password = data.get('rtsp', {}).get('password', '')
         self.rtsp_profile = data.get('rtsp', {}).get('profile', '')
 
+        self.serial_baud_rate = data.get('serial', {}).get('baud_rate', 0)
+        self.serial_read = data.get('serial', {}).get('read', '')
+        self.serial_write = data.get('serial', {}).get('write', '')
+
         self.app_confidence = data.get('app', {}).get('confidence', 0)
         self.app_recognition_timeout = data.get('app', {}).get('recognition_timeout', 0)
-        self.app_serial_read = data.get('app', {}).get('serial_read', '')
-        self.app_serial_write = data.get('app', {}).get('serial_write', '')
 
     def validate(self) -> tuple[bool, str]:
         """Validates the configuration of the application."""
         for key, value in self.__dict__.items():
-            if key in ('app_confidence', 'app_recognition_timeout'):
+            if key in ('app_confidence', 'app_recognition_timeout', 'serial_baud_rate'):
                 result = isinstance(value, int) and value > 0
             else:
                 result = isinstance(value, str) and bool(value.strip())

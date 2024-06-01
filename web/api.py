@@ -14,9 +14,9 @@ class CubeApi:
 
     def __init__(self, app_config: AppConfiguration):
         self._logger = logging.getLogger('web.cube_api')
-        self._address = app_config.server_api_address
-        self._team_nr = app_config.auth_team_nr
-        self._auth_token = app_config.auth_token
+        self._address = app_config.api_address
+        self._team_nr = app_config.api_team_nr
+        self._auth_token = app_config.api_token
 
     @staticmethod
     def send_with_retry(request: Callable, *args: Any) -> None:

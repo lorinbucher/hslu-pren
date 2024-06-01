@@ -8,15 +8,16 @@ from multiprocessing.synchronize import Event
 import serial
 from serial.serialutil import SerialException, SerialTimeoutException
 
+from shared.data import AppConfiguration
 from .command import Command, Message
 
 
 class UartWriter:
     """Writes data to the UART interface."""
 
-    def __init__(self, port: str, halt: Event, ack_queue: Queue, write_queue: Queue) -> None:
+    def __init__(self, app_config: AppConfiguration, halt: Event, ack_queue: Queue, write_queue: Queue) -> None:
         self._logger = logging.getLogger('uart.writer')
-        self._port = port
+        self._app_config = app_config
         self._halt = halt
         self._ack_queue = ack_queue
         self._write_queue = write_queue
@@ -80,7 +81,7 @@ class UartWriter:
                     self._ack_queue.get_nowait()
                 if self._ser is None or not self._ser.is_open:
                     self._logger.info('Opening UART write connection')
-                    self._ser = serial.Serial(self._port, 115200)
+                    self._ser = serial.Serial(self._app_config.serial_write, self._app_config.serial_baud_rate)
                 self._ser.write(message)
 
                 ack_result = self._ack_queue.get(timeout=2.0)

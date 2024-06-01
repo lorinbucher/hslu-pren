@@ -25,24 +25,25 @@ python3 -m pip install -r requirements.txt
 
 ```toml
 # config.toml
-[auth]
+[api]
+address = "oawz3wjih1.execute-api.eu-central-1.amazonaws.com"
 team_nr = "03"
 token = "<auth_token>"
 
-[server]
-api_address = "<ip_address>:<port>"
-rtsp_address = "<ip_address>"
-
 [rtsp]
+address = "147.88.48.131"
 user = "pren"
 password = "<password>"
-profile = "<pren_profile_small|pren_profile_med>"
+profile = "pren_profile_med" # pren_profile_small
+
+[serial]
+baud_rate = 115200
+read = "/dev/ttyAMA0"
+write = "/dev/ttyAMA0"
 
 [app]
 confidence = 25
 recognition_timeout = 60
-serial_read = "/dev/ttyAMA0"
-serial_write = "/dev/ttyAMA0"
 ```
 
 ## Deployment

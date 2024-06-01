@@ -7,15 +7,16 @@ from multiprocessing.synchronize import Event
 import serial
 from serial.serialutil import SerialException, SerialTimeoutException
 
+from shared.data import AppConfiguration
 from .command import Command, Message
 
 
 class UartReader:
     """Reads data from the UART interface."""
 
-    def __init__(self, port: str, halt: Event, ack_queue: Queue, read_queue: Queue) -> None:
+    def __init__(self, app_config: AppConfiguration, halt: Event, ack_queue: Queue, read_queue: Queue) -> None:
         self._logger = logging.getLogger('uart.reader')
-        self._port = port
+        self._app_config = app_config
         self._halt = halt
         self._ack_queue = ack_queue
         self._read_queue = read_queue
@@ -78,7 +79,7 @@ class UartReader:
         try:
             if self._ser is None or not self._ser.is_open:
                 self._logger.info('Opening UART read connection')
-                self._ser = serial.Serial(self._port, 115200, timeout=2.0)
+                self._ser = serial.Serial(self._app_config.serial_read, self._app_config.serial_baud_rate, timeout=2.0)
             return self._ser.read(23)
         except (SerialException, SerialTimeoutException, ValueError) as error:
             self._logger.error('Failed to read message: %s', error)

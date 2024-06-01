@@ -109,7 +109,7 @@ class StreamProcessing:
     def _read_frame(self) -> Any:
         """Reads the next frame of the video stream."""
         url = (f'rtsp://{self._app_config.rtsp_user}:{self._app_config.rtsp_password}'
-               f'@{self._app_config.server_rtsp_address}/axis-media/media.amp'
+               f'@{self._app_config.rtsp_address}/axis-media/media.amp'
                f'?streamprofile={self._app_config.rtsp_profile}')
         try:
             if self._capture is None or not self._capture.isOpened():
