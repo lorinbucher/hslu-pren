@@ -1,8 +1,10 @@
 """The main application of the 3D Re-Builder."""
 import logging.config
 import multiprocessing
+import os
 import queue
 import signal
+import subprocess
 import sys
 import tomllib
 from concurrent.futures import ProcessPoolExecutor
@@ -133,10 +135,21 @@ def _stop_run() -> None:
     logger.info('Run completed in %.3fs', time_measurement.total_runtime())
 
 
+def _notify_systemd() -> None:
+    """Notifies systemd that the app is started."""
+    try:
+        if 'NOTIFY_SOCKET' in os.environ:
+            logger.info('Send ready signal to systemd')
+            subprocess.run(['systemd-notify', f'--pid={os.getppid()}', '--ready'], capture_output=True, check=True)
+    except subprocess.CalledProcessError as error:
+        logger.error('Failed to notify systemd: %s', error.stderr.decode().strip())
+
+
 def main() -> None:
     """The main application loop managing all processes."""
     # pylint: disable=possibly-used-before-assignment
     logger.info('Entering main loop')
+    _notify_systemd()
     while not halt.is_set():
         _handle_uart_messages()
         _process_manager()
