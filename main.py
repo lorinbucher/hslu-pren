@@ -140,7 +140,7 @@ def _notify_systemd() -> None:
     try:
         if 'NOTIFY_SOCKET' in os.environ:
             logger.info('Send ready signal to systemd')
-            subprocess.run(['systemd-notify', f'--pid={os.getppid()}', '--ready'], capture_output=True, check=True)
+            subprocess.run(['systemd-notify', f'--pid={os.getpid()}', '--ready'], capture_output=True, check=True)
     except subprocess.CalledProcessError as error:
         logger.error('Failed to notify systemd: %s', error.stderr.decode().strip())
 
