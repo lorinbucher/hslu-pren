@@ -23,7 +23,7 @@ class CubeApi:
         """Retries sending the request if it failed."""
         for i in range(5):
             if not request(*args):
-                interval = 0.1 * (i + 1)
+                interval = 0.2 * (i + 1)
                 time.sleep(interval)
             else:
                 break
@@ -46,11 +46,11 @@ class CubeApi:
         response = self._post_request(f'https://{self._address}/cubes/team{self._team_nr}/start')
         return 200 <= response.status_code <= 299 if response else False
 
-    def post_config(self, cube_config: CubeConfiguration) -> bool:
+    def post_config(self, cube_config: CubeConfiguration, timestamp: datetime) -> bool:
         """Sends a POST request with the recognized cube configuration."""
         self._logger.info('Sending config request')
         data = {
-            'time': datetime.utcnow().isoformat(),
+            'time': timestamp.isoformat(),
             'config': cube_config.to_dict()
         }
         response = self._post_request(f'https://{self._address}/cubes/team{self._team_nr}/config', data=data)

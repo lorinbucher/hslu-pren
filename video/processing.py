@@ -1,5 +1,6 @@
 """Implements the video stream processing module."""
 import concurrent.futures
+import datetime
 import logging
 import time
 from multiprocessing import Event, Process, Queue
@@ -148,5 +149,6 @@ class StreamProcessing:
             if self._cube_config.completed():
                 self._logger.info('Cube configuration completed')
                 self.stop_recognition()
+                timestamp = datetime.datetime.now()
                 cube_api = CubeApi(self._app_config)
-                cube_api.post_config(cube_config)
+                CubeApi.send_with_retry(cube_api.post_config, cube_config, timestamp)
