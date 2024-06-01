@@ -75,11 +75,16 @@ class CubeConfiguration:
             return CubeColor.UNKNOWN
         return self.config[pos - 1]
 
-    def set_color(self, pos: int, color: CubeColor) -> None:
-        """Sets the color at the specified position, position starts at 1."""
+    def set_color(self, color: CubeColor, pos: int, offset: int = 0) -> None:
+        """Sets the color at the specified position with an optional offset.
+        Position starts at 1. Offsets are applied separately to the lower (1-4)
+        and upper (5-8) positions in a rolling manner.
+        """
         if pos < 1 or pos > 8:
             return
-        self.config[pos - 1] = color
+        start_index = 4 if pos > 4 else 0
+        rolled_pos = (pos - 1 - start_index + offset) % 4
+        self.config[rolled_pos + start_index] = color
 
     def to_dict(self) -> dict[str, str]:
         """Returns a dictionary containing the cube configuration."""

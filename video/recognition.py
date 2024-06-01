@@ -15,8 +15,8 @@ FRAME_CROP_H = 400
 
 # Color ranges
 # TODO (lorin): tweak ranges more, to optimize detection and remove noise
-LOWER_REF = np.array([0, 0, 200])
-UPPER_REF = np.array([180, 50, 255])
+LOWER_REF = np.array([0, 0, 175])
+UPPER_REF = np.array([180, 60, 255])
 LOWER_BLUE = np.array([100, 75, 50])
 UPPER_BLUE = np.array([130, 255, 255])
 LOWER_RED_LOW = np.array([0, 75, 50])
@@ -43,6 +43,10 @@ class CubeRecognition:
     @staticmethod
     def process_frame(frame: Any) -> list[CubeColor]:
         """Performs the cube image recognition on a single frame."""
+        config = CubeConfiguration()
+        if frame is None:
+            return config.config
+
         # Color Segmentation
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         mask_ref = cv2.inRange(hsv, LOWER_REF, UPPER_REF)
@@ -57,30 +61,34 @@ class CubeRecognition:
 
         # Contour Detection
         contours_cube = CubeRecognition._contour_with_min_size(mask_cube, 2500)
-        contours_ref = CubeRecognition._contour_with_min_size(mask_ref)
+        contours_ref = CubeRecognition._contour_with_min_size(mask_ref, 2500)
         contours_blue = CubeRecognition._contour_with_min_size(mask_blue)
         contours_red = CubeRecognition._contour_with_min_size(mask_red)
         contours_yellow = CubeRecognition._contour_with_min_size(mask_yellow)
 
         # Filter contours that are not near the detected cube
         contour_cube = max(contours_cube, key=lambda c: cv2.contourArea(c))  # pylint: disable=unnecessary-lambda
-        contour_ref = max(contours_ref, key=lambda c: cv2.contourArea(c))  # pylint: disable=unnecessary-lambda
+        # contour_ref = max(contours_ref, key=lambda c: cv2.contourArea(c))  # pylint: disable=unnecessary-lambda
         contour_map = ([(CubeColor.BLUE, c, CubeRecognition._contour_center(c)) for c in contours_blue] +
                        [(CubeColor.RED, c, CubeRecognition._contour_center(c)) for c in contours_red] +
                        [(CubeColor.YELLOW, c, CubeRecognition._contour_center(c)) for c in contours_yellow])
         contour_map = [cnt for cnt in contour_map if CubeRecognition._point_in_contour(contour_cube, cnt[2])]
 
-        config = CubeConfiguration()
-        offset = CubeRecognition._reference_offset(contour_ref, FRAME_CROP_W, FRAME_CROP_H)
+        offset = CubeRecognition._reference_offset(contours_ref, FRAME_CROP_W, FRAME_CROP_H)
         if offset >= 0 and len(contour_map) > 0:
-            if frame is not None:
-                config.set_color(np.random.randint(5, 9), CubeColor.NONE)
-                config.set_color(np.random.randint(1, 9), CubeColor.BLUE)
-                config.set_color(np.random.randint(1, 9), CubeColor.RED)
-                config.set_color(np.random.randint(1, 9), CubeColor.YELLOW)
-                config.set_color(np.random.randint(1, 9), CubeColor.BLUE)
-                config.set_color(np.random.randint(1, 9), CubeColor.RED)
-                config.set_color(np.random.randint(1, 9), CubeColor.YELLOW)
+            config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (200, 300)), 1, offset)
+            config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (300, 300)), 2, offset)
+            config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (300, 100)), 7, offset)
+            config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (200, 100)), 8, offset)
+
+        # if frame is not None:
+        #     config.set_color(np.random.randint(5, 9), CubeColor.NONE)
+        #     config.set_color(np.random.randint(1, 9), CubeColor.BLUE)
+        #     config.set_color(np.random.randint(1, 9), CubeColor.RED)
+        #     config.set_color(np.random.randint(1, 9), CubeColor.YELLOW)
+        #     config.set_color(np.random.randint(1, 9), CubeColor.BLUE)
+        #     config.set_color(np.random.randint(1, 9), CubeColor.RED)
+        #     config.set_color(np.random.randint(1, 9), CubeColor.YELLOW)
         return config.config
 
     @staticmethod
@@ -110,22 +118,34 @@ class CubeRecognition:
         return cv2.pointPolygonTest(contour, point, measureDist=False) >= 0
 
     @staticmethod
-    def _reference_offset(ref, width, height) -> int:
+    def _point_in_any_contour(contours: list[Any], point: tuple[float, float]):
+        """Returns true if the point is within any of the contours."""
+        return any(CubeRecognition._point_in_contour(cnt, point) for cnt in contours)
+
+    @staticmethod
+    def _reference_offset(refs: list[Any], width: int, height: int) -> int:
         """Returns the reference offset, negative if not entirely clear."""
-        if (CubeRecognition._point_in_contour(ref, (25, height - 25)) and
-                CubeRecognition._point_in_contour(ref, (25, height - 100)) and
-                CubeRecognition._point_in_contour(ref, (200, height - 25))):
+        if (CubeRecognition._point_in_any_contour(refs, (25, height - 25)) and
+                CubeRecognition._point_in_any_contour(refs, (25, height - 100)) and
+                CubeRecognition._point_in_any_contour(refs, (200, height - 25))):
             return 0
-        if (CubeRecognition._point_in_contour(ref, (25, height - 175)) and
-                CubeRecognition._point_in_contour(ref, (75, 150)) and
-                CubeRecognition._point_in_contour(ref, (125, 125))):
+        if (CubeRecognition._point_in_any_contour(refs, (25, height - 175)) and
+                CubeRecognition._point_in_any_contour(refs, (75, 150)) and
+                CubeRecognition._point_in_any_contour(refs, (125, 125))):
             return 1
-        if (CubeRecognition._point_in_contour(ref, (width - 25, height - 175)) and
-                CubeRecognition._point_in_contour(ref, (width - 75, 150)) and
-                CubeRecognition._point_in_contour(ref, (width - 125, 125))):
+        if (CubeRecognition._point_in_any_contour(refs, (width - 25, height - 175)) and
+                CubeRecognition._point_in_any_contour(refs, (width - 75, 150)) and
+                CubeRecognition._point_in_any_contour(refs, (width - 125, 125))):
             return 2
-        if (CubeRecognition._point_in_contour(ref, (width - 25, height - 25)) and
-                CubeRecognition._point_in_contour(ref, (width - 25, height - 100)) and
-                CubeRecognition._point_in_contour(ref, (width - 200, height - 25))):
+        if (CubeRecognition._point_in_any_contour(refs, (width - 25, height - 25)) and
+                CubeRecognition._point_in_any_contour(refs, (width - 25, height - 100)) and
+                CubeRecognition._point_in_any_contour(refs, (width - 200, height - 25))):
             return 3
         return -1
+
+    @staticmethod
+    def _find_color_for_point(cnt_map, point_color, point):
+        for cnt in cnt_map:
+            if cnt[0] != point_color and CubeRecognition._point_in_contour(cnt[1], (int(point[0]), int(point[1]))):
+                return cnt[0]
+        return CubeColor.NONE

@@ -133,7 +133,7 @@ class StreamProcessing:
             color_set = self._cube_config.get_color(pos) != CubeColor.UNKNOWN
             count = colors_at_pos.get(color, 0) + 1
             if not color_set and color != CubeColor.UNKNOWN and count >= self._app_config.app_confidence:
-                self._cube_config.set_color(pos, color)
+                self._cube_config.set_color(color, pos)
                 changed = True
 
             colors_at_pos[color] = count
@@ -146,4 +146,5 @@ class StreamProcessing:
             self._builder_queue.put(cube_config)
             if self._cube_config.completed():
                 self._logger.info('Cube configuration completed')
+                # TODO (lorin): send request to api
                 self.stop_recognition()
