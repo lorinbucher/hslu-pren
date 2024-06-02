@@ -102,12 +102,12 @@ class RebuilderApplication:
                 if exec_finished_cmd == Command.MOVE_LIFT:
                     self._uart_write.put(CommandBuilder.other_command(Command.GET_STATE))
             if cmd == Command.SEND_STATE:
-                energy = message.data.send_state.energy
+                energy = self._convert_energy(message.data.send_state.energy)
                 lift_state = LiftState(message.data.send_state.lift_state)
                 werni_state = WerniState(message.data.send_state.werni_state)
                 if lift_state == LiftState.LIFT_DOWN:
                     self._finish_run()
-                self._logger.info('State - energy: %sWs, lift: %s, werni: %s', energy, lift_state, werni_state)
+                self._logger.info('State - energy: %.3fWh, lift: %s, werni: %s', energy, lift_state, werni_state)
         except ValueError as error:
             self._logger.error('Failed to parse UART message: %s', error)
         except queue.Empty:
@@ -166,3 +166,10 @@ class RebuilderApplication:
         self._uart_write.put(CommandBuilder.enable_buzzer(BuzzerState.ENABLE))
         time.sleep(10)
         self._uart_write.put(CommandBuilder.enable_buzzer(BuzzerState.DISABLE))
+
+    def _convert_energy(self, energy: float) -> float:
+        """Converts the energy measurement into Wh."""
+        multiplier = 1.0
+        if self._app_config.app_efficiency_mode:
+            multiplier = 0.5
+        return (energy / 3600) * multiplier
