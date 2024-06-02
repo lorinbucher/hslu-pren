@@ -1,5 +1,5 @@
 """Shared data classes that are used in different parts of the application."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from shared.enumerations import CubeColor
 
@@ -67,7 +67,7 @@ class CubeConfiguration:
     positions 2-4 specify sectors on the turntable in the counterclockwise direction.
     The Positions 5-8 are those on the 2nd level, on top of the underlying cube.
     """
-    config = [CubeColor.UNKNOWN for _ in range(8)]
+    config: list[CubeColor] = field(default_factory=lambda: [CubeColor.UNKNOWN for _ in range(8)])
 
     def completed(self) -> bool:
         """Returns true if all positions are known."""

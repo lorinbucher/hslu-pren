@@ -70,8 +70,6 @@ class StreamProcessing:
         """Starts the cube image recognition."""
         self._logger.info('Starting cube image recognition')
         self._recognition.set()
-        self._cube_config.reset()
-        self._recognition_result = {}
 
     def stop_recognition(self) -> None:
         """Stops the cube image recognition."""
@@ -86,6 +84,8 @@ class StreamProcessing:
             while not self._halt.is_set():
                 frame = self._read_frame()
                 if not self._recognition.is_set():
+                    self._cube_config.reset()
+                    self._recognition_result = {}
                     continue
 
                 if frame is not None:
@@ -143,12 +143,10 @@ class StreamProcessing:
 
         if changed:
             self._logger.info('Cube configuration changed: %s', self._cube_config.to_dict())
-            cube_config = CubeConfiguration()
-            cube_config.config = self._cube_config.config
-            self._builder_queue.put(cube_config)
+            self._builder_queue.put(self._cube_config)
             if self._cube_config.completed():
                 self._logger.info('Cube configuration completed')
                 self.stop_recognition()
                 timestamp = datetime.datetime.now()
                 cube_api = CubeApi(self._app_config)
-                CubeApi.send_with_retry(cube_api.post_config, cube_config, timestamp)
+                CubeApi.send_with_retry(cube_api.post_config, self._cube_config, timestamp)
