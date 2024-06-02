@@ -76,6 +76,5 @@ if __name__ == '__main__':
     # Run application
     rebuilder_app = RebuilderApplication(config)
     rebuilder_app.start()
-    rebuilder_app.run()
     rebuilder_app.join()
     rebuilder_app.stop()
