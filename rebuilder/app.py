@@ -3,6 +3,7 @@ import logging
 import queue
 import time
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from multiprocessing import Event, Queue
 
 from shared.data import AppConfiguration, CubeConfiguration
@@ -88,6 +89,7 @@ class RebuilderApplication:
 
         if config.completed():
             self._logger.info('Received complete configuration: %s', config.to_dict())
+            self._executor.submit(CubeApi.send_with_retry, self._cube_api.post_config, config, datetime.now())
             self._builder.set_config(config.config)
             self._builder.build(build_doubles_first=True)
 
