@@ -82,8 +82,8 @@ class SendState(Structure):
 class SendIOState(Structure):
     """The data payload of the send IO state command."""
     _fields_ = [
-        ('btn_start', c_uint8),
-        ('btn_stop', c_uint8)
+        ('btn_stop', c_uint8),
+        ('btn_start', c_uint8)
     ]
 
 
