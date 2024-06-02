@@ -24,7 +24,6 @@ class Builder:
         self.rotated = 0
 
         self._config: list[CubeColor] = []
-        self._placed: list[bool] = []
         self._pos: list[CubeColor] = []
         self._cube_states: list[CubeState] = []
 
@@ -34,7 +33,6 @@ class Builder:
         """Resets the state of the builder."""
         self._config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED,
                         CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
-        self._placed = [False, False, False, False, False, False, False, False]
         self._pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
         self._cube_states = [CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN,
                              CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN]
