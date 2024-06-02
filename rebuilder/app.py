@@ -1,7 +1,8 @@
 """Implements the 3D Re-Builder application."""
 import logging
 import queue
-from concurrent.futures import ProcessPoolExecutor
+import time
+from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import Event, Queue
 
 from shared.data import AppConfiguration
@@ -20,7 +21,7 @@ class RebuilderApplication:
     def __init__(self, app_config: AppConfiguration):
         self._logger = logging.getLogger('rebuilder.app')
         self._app_config = app_config
-        self._executor = ProcessPoolExecutor(max_workers=2)
+        self._executor = ThreadPoolExecutor(max_workers=4)
         self._halt_event = Event()
         self._run_in_progress = False
 
@@ -97,7 +98,6 @@ class RebuilderApplication:
                 werni_state = WerniState(message.data.send_state.werni_state)
                 if lift_state == LiftState.LIFT_DOWN:
                     self._finish_run()
-                    self._uart_write.put(CommandBuilder.enable_buzzer(BuzzerState.ENABLE))
                 self._logger.info('State - energy: %sWs, lift: %s, werni: %s', energy, lift_state, werni_state)
         except ValueError as error:
             self._logger.error('Failed to parse UART message: %s', error)
@@ -150,4 +150,10 @@ class RebuilderApplication:
         self._stream_processing.stop_recognition()
         self._executor.submit(CubeApi.send_with_retry, self._cube_api.post_end)
         self._logger.info('Run completed in %.3fs', self._time_measurement.total_runtime())
-        self._executor.submit(CubeApi.send_with_retry, self._cube_api.get_config)
+        self._executor.submit(self._buzzer)
+
+    def _buzzer(self) -> None:
+        """Marks the end of the run with the buzzer for a few seconds."""
+        self._uart_write.put(CommandBuilder.enable_buzzer(BuzzerState.ENABLE))
+        time.sleep(10)
+        self._uart_write.put(CommandBuilder.enable_buzzer(BuzzerState.DISABLE))
