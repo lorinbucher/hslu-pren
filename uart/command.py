@@ -22,6 +22,7 @@ class Command(Enum):
     EXECUTION_FINISHED = 13
     RESET_ENERGY_MEASUREMENT = 14
     RESET_WERNI = 15
+    ENABLE_BUZZER = 16
 
 
 class ButtonState(Enum):
@@ -95,6 +96,12 @@ class ExecFinished(Structure):
     ]
 
 
+class BuzzerState(Enum):
+    """The data payload of the enable buzzer command."""
+    DISABLE = 0
+    ENABLE = 1
+
+
 class DataUnion(Union):
     """The data payload for the UART message."""
     _fields_ = [
@@ -104,6 +111,7 @@ class DataUnion(Union):
         ('send_state', SendState),
         ('send_io_state', SendIOState),
         ('exec_finished', ExecFinished),
+        ('enable_buzzer', c_uint8),
         ('data_field', c_uint8 * 16)
     ]
 

@@ -1,5 +1,5 @@
 """Helper classes to build the commands for the UART communication protocol."""
-from .command import Command, DataUnion, Message, MoveLift, PlaceCubes, RotateGrid
+from .command import BuzzerState, Command, DataUnion, Message, MoveLift, PlaceCubes, RotateGrid
 
 
 class CommandBuilder:
@@ -58,6 +58,19 @@ class CommandBuilder:
 
         cmd = Message()
         cmd.cmd = Command.MOVE_LIFT.value
+        cmd.id = cls._generate_id()
+        cmd.data = data
+        cmd.checksum = 12
+        return cmd
+
+    @classmethod
+    def enable_buzzer(cls, state: BuzzerState) -> Message:
+        """Builds the command to enable or disable the buzzer."""
+        data = DataUnion()
+        data.enable_buzzer = state.value
+
+        cmd = Message()
+        cmd.cmd = Command.ENABLE_BUZZER.value
         cmd.id = cls._generate_id()
         cmd.data = data
         cmd.checksum = 12

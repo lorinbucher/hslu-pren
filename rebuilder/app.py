@@ -5,7 +5,7 @@ from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import Event, Queue
 
 from shared.data import AppConfiguration
-from uart.command import ButtonState, Command, LiftState, WerniState
+from uart.command import ButtonState, BuzzerState, Command, LiftState, WerniState
 from uart.commandbuilder import CommandBuilder
 from uart.communicator import UartCommunicator
 from video.processing import StreamProcessing
@@ -97,6 +97,7 @@ class RebuilderApplication:
                 werni_state = WerniState(message.data.send_state.werni_state)
                 if lift_state == LiftState.LIFT_DOWN:
                     self._finish_run()
+                    self._uart_write.put(CommandBuilder.enable_buzzer(BuzzerState.ENABLE))
                 self._logger.info('State - energy: %sWs, lift: %s, werni: %s', energy, lift_state, werni_state)
         except ValueError as error:
             self._logger.error('Failed to parse UART message: %s', error)
