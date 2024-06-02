@@ -29,7 +29,7 @@ class CommandBuilder:
         cmd.cmd = Command.ROTATE_GRID.value
         cmd.id = cls._generate_id()
         cmd.data = data
-        cmd.checksum = cls._calculate_checksum(cmd)
+        cmd.checksum = cls.calculate_checksum(cmd)
         return cmd
 
     @classmethod
@@ -47,7 +47,7 @@ class CommandBuilder:
         cmd.cmd = Command.PLACE_CUBES.value
         cmd.id = cls._generate_id()
         cmd.data = data
-        cmd.checksum = cls._calculate_checksum(cmd)
+        cmd.checksum = cls.calculate_checksum(cmd)
         return cmd
 
     @classmethod
@@ -60,7 +60,7 @@ class CommandBuilder:
         cmd.cmd = Command.MOVE_LIFT.value
         cmd.id = cls._generate_id()
         cmd.data = data
-        cmd.checksum = cls._calculate_checksum(cmd)
+        cmd.checksum = cls.calculate_checksum(cmd)
         return cmd
 
     @classmethod
@@ -73,7 +73,7 @@ class CommandBuilder:
         cmd.cmd = Command.ENABLE_BUZZER.value
         cmd.id = cls._generate_id()
         cmd.data = data
-        cmd.checksum = cls._calculate_checksum(cmd)
+        cmd.checksum = cls.calculate_checksum(cmd)
         return cmd
 
     @classmethod
@@ -83,11 +83,11 @@ class CommandBuilder:
         cmd.cmd = command.value
         cmd.id = cls._generate_id()
         cmd.data = data
-        cmd.checksum = cls._calculate_checksum(cmd)
+        cmd.checksum = cls.calculate_checksum(cmd)
         return cmd
 
     @staticmethod
-    def _calculate_checksum(message: Message) -> int:
+    def calculate_checksum(message: Message) -> int:
         """Calculates the checksum of the message."""
         data = bytes(message)[:-1]
         crc = 123456  # initial value

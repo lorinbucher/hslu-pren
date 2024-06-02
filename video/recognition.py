@@ -136,6 +136,7 @@ class CubeRecognition:
 
     @staticmethod
     def _find_color_for_point(cnt_map, point_color, point):
+        """Finds the color for a point from the contour map."""
         for cnt in cnt_map:
             if cnt[0] != point_color and CubeRecognition._point_in_contour(cnt[1], (int(point[0]), int(point[1]))):
                 return cnt[0]
