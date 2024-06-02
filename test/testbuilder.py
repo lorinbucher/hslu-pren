@@ -11,7 +11,7 @@ class TestBuildAlgorithm(unittest.TestCase):
     """Test class for the build algorithm."""
 
     def test_move_pos(self):
-        builder = Builder(Queue(), Queue())
+        builder = Builder(Queue())
 
         # Move array left by 1
         builder.reset()
@@ -45,7 +45,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
     def test_rotate_grid(self):
         uart_write = Queue()
-        builder = Builder(Queue(), uart_write)
+        builder = Builder(uart_write)
 
         builder.rotate_grid(-5)
         message = uart_write.get(timeout=2.0)
@@ -98,7 +98,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
     def test_place_cubes(self):
         uart_write = Queue()
-        builder = Builder(Queue(), uart_write)
+        builder = Builder(uart_write)
 
         builder.place_cubes([False, False, False, False])
         self.assertTrue(uart_write.empty())
@@ -160,7 +160,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertTrue(Builder.array_false([False, False, False, False]))
 
     def test_match_with_config(self):
-        builder = Builder(Queue(), Queue())
+        builder = Builder(Queue())
         matches, config = builder.match_with_config([CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE])
         self.assertEqual([False, True, True, True], matches)
         self.assertEqual([CubeColor.NONE, CubeColor.NONE, CubeColor.NONE, CubeColor.NONE], config)
@@ -175,7 +175,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
     def test_build_config_1(self):
         uart_write = Queue()
-        builder = Builder(Queue(), uart_write)
+        builder = Builder(uart_write)
 
         builder.build_config([CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE])
         message = uart_write.get(timeout=2.0)
@@ -186,7 +186,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
     def test_build_config_2(self):
         uart_write = Queue()
-        builder = Builder(Queue(), uart_write)
+        builder = Builder(uart_write)
 
         builder.build_config([CubeColor.RED, CubeColor.RED, CubeColor.RED, CubeColor.RED])
 
@@ -229,7 +229,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertTrue(uart_write.empty())
 
     def test_update_cube_state(self):
-        builder = Builder(Queue(), Queue())
+        builder = Builder(Queue())
         builder.update_cube_states()
         self.assertEqual(
             [CubeState.NOTPLACED, CubeState.NOTPLACED, CubeState.PLACED, CubeState.NOTPLACED, CubeState.NOTPLACED,
@@ -237,7 +237,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
     def test_build_1(self):
         uart_write = Queue()
-        builder = Builder(Queue(), uart_write)
+        builder = Builder(uart_write)
 
         builder.set_config(
             [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.NONE, CubeColor.NONE,
@@ -275,7 +275,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
     def test_build_2(self):
         uart_write = Queue()
-        builder = Builder(Queue(), uart_write)
+        builder = Builder(uart_write)
 
         builder.set_config(
             [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW,
@@ -329,7 +329,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
     def test_build_3(self):
         uart_write = Queue()
-        builder = Builder(Queue(), uart_write)
+        builder = Builder(uart_write)
 
         builder.set_config(
             [CubeColor.RED, CubeColor.UNKNOWN, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW,
@@ -402,7 +402,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
     def test_build_with_doubles_first_1(self):
         uart_write = Queue()
-        builder = Builder(Queue(), uart_write)
+        builder = Builder(uart_write)
 
         builder.set_config(
             [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.YELLOW,
@@ -440,7 +440,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
     def test_build_with_doubles_first_2(self):
         uart_write = Queue()
-        builder = Builder(Queue(), uart_write)
+        builder = Builder(uart_write)
 
         builder.set_config(
             [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED, CubeColor.RED, CubeColor.BLUE,

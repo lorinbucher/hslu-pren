@@ -1,10 +1,8 @@
 """Implements the build algorithm."""
 import logging
-import queue
 from enum import Enum
-from multiprocessing import Event, Process, Queue
+from multiprocessing import Queue
 
-from shared.data import CubeConfiguration
 from shared.enumerations import CubeColor
 from uart.command import MoveLift
 from uart.commandbuilder import CommandBuilder
@@ -20,15 +18,11 @@ class CubeState(Enum):
 class Builder:
     """Sends the commands using the UART communication protocol to build the detected cube configuration."""
 
-    def __init__(self, builder_queue: Queue, uart_write: Queue) -> None:
+    def __init__(self, uart_write: Queue) -> None:
         self._logger = logging.getLogger('rebuilder.builder')
-        self._halt = Event()
-        self._builder_queue = builder_queue
         self._uart_write = uart_write
-        self._halt.set()
         self.rotated = 0
 
-        self._process: Process | None = None
         self._config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED,
                         CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
         self._placed = [False, False, False, False, False, False, False, False]
@@ -36,66 +30,6 @@ class Builder:
 
         self._cube_states = [CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN,
                              CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN]
-
-    def start(self) -> None:
-        """Starts the builder."""
-        self._logger.info('Starting builder')
-        self.reset()
-        self._halt.clear()
-        self._process = Process(target=self._run)
-        self._process.start()
-        self._logger.info('Builder started')
-
-    def join(self) -> None:
-        """Waits for the builder to complete."""
-        if self._process is not None:
-            self._logger.info('Waiting for builder to complete')
-            self._process.join()
-            self._logger.info('Builder completed')
-
-    def stop(self) -> None:
-        """Stops the builder."""
-        if self._process is not None:
-            self._logger.info('Stopping builder')
-            self._process.close()
-            self._process = None
-            self._logger.info('Builder stopped')
-
-    def halt(self) -> None:
-        """Sends the halt event to builder task."""
-        self._logger.info('Halting builder')
-        self._halt.set()
-
-    def halted(self) -> bool:
-        """Returns true if the halt event is set, false if not."""
-        return self._halt.is_set()
-
-    def alive(self) -> bool:
-        """Returns true if the builder process is alive, false if not."""
-        result = self._process is not None and self._process.is_alive()
-        if not result:
-            self._logger.warning('Builder not alive')
-        return result
-
-    def _run(self) -> None:
-        """Runs the builder process."""
-        self._logger.info('Builder process started')
-        while not self._halt.is_set():
-            try:
-                config = self._builder_queue.get(timeout=2.0)
-                if not isinstance(config, CubeConfiguration):
-                    self._logger.warning('Received data has wrong type: %s', type(config))
-                    continue
-
-                if config.completed():
-                    self._logger.info('Received complete configuration: %s', config.to_dict())
-                    self._config = config.config
-                    self.build(build_doubles_first=True)
-                    self._halt.set()
-            except queue.Empty:
-                continue
-
-        self._logger.info('Builder process stopped')
 
     def reset(self) -> None:
         """Resets the state of the builder."""

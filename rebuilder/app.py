@@ -5,7 +5,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import Event, Queue
 
-from shared.data import AppConfiguration
+from shared.data import AppConfiguration, CubeConfiguration
 from uart.command import ButtonState, BuzzerState, Command, LiftState, WerniState
 from uart.commandbuilder import CommandBuilder
 from uart.communicator import UartCommunicator
@@ -32,7 +32,7 @@ class RebuilderApplication:
 
         self._cube_api = CubeApi(app_config)
         self._time_measurement = TimeMeasurement()
-        self._builder = Builder(self._recognition_queue, self._uart_write)
+        self._builder = Builder(self._uart_write)
         self._stream_processing = StreamProcessing(app_config, self._recognition_queue)
         self._uart_communicator = UartCommunicator(app_config, self._uart_read, self._uart_write)
 
@@ -47,7 +47,6 @@ class RebuilderApplication:
     def join(self) -> None:
         """Waits for the rebuilder application processes to complete."""
         self._logger.info('Waiting for rebuilder application processes to complete')
-        self._builder.join()
         self._stream_processing.join()
         self._uart_communicator.join(reader=True, writer=True)
         self._logger.info('Rebuilder application processes completed')
@@ -55,7 +54,6 @@ class RebuilderApplication:
     def stop(self) -> None:
         """Stops the rebuilder application processes."""
         self._logger.info('Stopping rebuilder application processes')
-        self._builder.stop()
         self._stream_processing.stop()
         self._uart_communicator.stop(reader=True, writer=True)
         self._executor.shutdown()
@@ -65,7 +63,6 @@ class RebuilderApplication:
         """Halts all processes of the rebuilder application."""
         self._logger.info('Halting rebuilder application processes')
         self._halt_event.set()
-        self._builder.halt()
         self._stream_processing.halt()
         self._uart_communicator.halt(reader=True, writer=True)
 
@@ -75,12 +72,29 @@ class RebuilderApplication:
         while not self._halt_event.is_set():
             self._handle_uart_messages()
             self._processes_alive_check()
+            self._process_recognition_result()
         self._logger.info('Exiting main loop')
+
+    def _process_recognition_result(self) -> None:
+        """Processes the cube recognition results."""
+        try:
+            config = self._recognition_queue.get_nowait()
+        except queue.Empty:
+            return
+
+        if not isinstance(config, CubeConfiguration):
+            self._logger.warning('Received data has wrong type: %s', type(config))
+            return
+
+        if config.completed():
+            self._logger.info('Received complete configuration: %s', config.to_dict())
+            self._builder.set_config(config.config)
+            self._builder.build(build_doubles_first=True)
 
     def _handle_uart_messages(self) -> None:
         """Handles incoming UART messages."""
         try:
-            message = self._uart_read.get(timeout=0.25)
+            message = self._uart_read.get(timeout=0.1)
             cmd = Command(message.cmd)
             self._logger.debug('Received UART message: %s', cmd)
 
@@ -115,8 +129,6 @@ class RebuilderApplication:
 
     def _processes_alive_check(self) -> None:
         """Checks if all processes are still alive."""
-        if not self._builder.halted() and not self._builder.alive():
-            self._builder.start()
         if not self._stream_processing.halted() and not self._stream_processing.alive():
             self._stream_processing.start()
         if not self._uart_communicator.halted(reader=True) and not self._uart_communicator.alive(reader=True):
@@ -144,7 +156,6 @@ class RebuilderApplication:
         self._executor.submit(CubeApi.send_with_retry, self._cube_api.post_start)
         self._uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
         self._uart_write.put(CommandBuilder.other_command(Command.RESET_ENERGY_MEASUREMENT))
-        self._builder.start()
         self._stream_processing.start_recognition()
 
     def _finish_run(self) -> None:
