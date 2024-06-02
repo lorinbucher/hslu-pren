@@ -24,6 +24,7 @@ class RebuilderApplication:
         self._executor = ThreadPoolExecutor(max_workers=4)
         self._halt_event = Event()
         self._run_in_progress = False
+        self._run_paused = False
 
         self._recognition_queue: Queue = Queue()
         self._uart_read: Queue = Queue()
@@ -84,9 +85,17 @@ class RebuilderApplication:
             self._logger.debug('Received UART message: %s', cmd)
 
             if cmd == Command.SEND_IO_STATE:
+                btn_stop_state = ButtonState(message.data.send_io_state.btn_stop)
+                if btn_stop_state in (ButtonState.SHORT_CLICKED, ButtonState.LONG_CLICKED):
+                    self._run_paused = True
+                    self._uart_write.put(CommandBuilder.other_command(Command.PAUSE_BUILD))
                 btn_start_state = ButtonState(message.data.send_io_state.btn_start)
                 if btn_start_state in (ButtonState.SHORT_CLICKED, ButtonState.LONG_CLICKED):
-                    self._start_run()
+                    if self._run_paused:
+                        self._run_paused = False
+                        self._uart_write.put(CommandBuilder.other_command(Command.RESUME_BUILD))
+                    else:
+                        self._start_run()
             if cmd == Command.EXECUTION_FINISHED:
                 exec_finished_cmd = Command(message.data.exec_finished.cmd)
                 self._logger.info('Finished command: %s', exec_finished_cmd)
