@@ -54,6 +54,7 @@ write = "/dev/ttyAMA0"
 [app]
 confidence = 25
 recognition_timeout = 60
+incremental_build = false
 ```
 
 ## Deployment

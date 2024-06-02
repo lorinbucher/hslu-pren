@@ -22,6 +22,7 @@ class AppConfiguration:
 
     app_confidence: int = 0
     app_recognition_timeout: int = 0
+    app_incremental_build: bool = False
 
     def from_dict(self, data: dict) -> None:
         """Reads the app configuration from a dictionary."""
@@ -40,12 +41,15 @@ class AppConfiguration:
 
         self.app_confidence = data.get('app', {}).get('confidence', 0)
         self.app_recognition_timeout = data.get('app', {}).get('recognition_timeout', 0)
+        self.app_incremental_build = data.get('app', {}).get('incremental_build', False)
 
     def validate(self) -> tuple[bool, str]:
         """Validates the configuration of the application."""
         for key, value in self.__dict__.items():
             if key in ('app_confidence', 'app_recognition_timeout', 'serial_baud_rate'):
                 result = isinstance(value, int) and value > 0
+            elif key == 'app_incremental_build':
+                result = isinstance(value, bool)
             else:
                 result = isinstance(value, str) and bool(value.strip())
 
