@@ -29,7 +29,7 @@ class CommandBuilder:
         cmd.cmd = Command.ROTATE_GRID.value
         cmd.id = cls._generate_id()
         cmd.data = data
-        cmd.checksum = 12
+        cmd.checksum = cls._calculate_checksum(cmd)
         return cmd
 
     @classmethod
@@ -47,7 +47,7 @@ class CommandBuilder:
         cmd.cmd = Command.PLACE_CUBES.value
         cmd.id = cls._generate_id()
         cmd.data = data
-        cmd.checksum = 12
+        cmd.checksum = cls._calculate_checksum(cmd)
         return cmd
 
     @classmethod
@@ -60,7 +60,7 @@ class CommandBuilder:
         cmd.cmd = Command.MOVE_LIFT.value
         cmd.id = cls._generate_id()
         cmd.data = data
-        cmd.checksum = 12
+        cmd.checksum = cls._calculate_checksum(cmd)
         return cmd
 
     @classmethod
@@ -73,7 +73,7 @@ class CommandBuilder:
         cmd.cmd = Command.ENABLE_BUZZER.value
         cmd.id = cls._generate_id()
         cmd.data = data
-        cmd.checksum = 12
+        cmd.checksum = cls._calculate_checksum(cmd)
         return cmd
 
     @classmethod
@@ -83,5 +83,20 @@ class CommandBuilder:
         cmd.cmd = command.value
         cmd.id = cls._generate_id()
         cmd.data = data
-        cmd.checksum = 12
+        cmd.checksum = cls._calculate_checksum(cmd)
         return cmd
+
+    @staticmethod
+    def _calculate_checksum(message: Message) -> int:
+        """Calculates the checksum of the message."""
+        data = bytes(message)[:-1]
+        crc = 123456  # initial value
+        polynomial = 0b100101111  # x^8 + x^5 + x^3 + x^2 + x + 1
+        for byte in data:
+            crc ^= byte
+            for _ in range(8):
+                if crc & 0x80:
+                    crc = (crc << 1) ^ polynomial
+                else:
+                    crc <<= 1
+        return crc & 0xFF
