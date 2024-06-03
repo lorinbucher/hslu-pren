@@ -38,6 +38,7 @@ class StreamProcessing:
         """Stops the video stream processing."""
         if self._process is not None:
             self._logger.info('Stopping video stream processing')
+            self._process.join()
             self._process.close()
             self._process = None
             self._logger.info('Video stream processing stopped')

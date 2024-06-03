@@ -2,6 +2,7 @@
 import logging
 import multiprocessing
 import queue
+import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
@@ -27,8 +28,10 @@ class RebuilderApplication:
         self._app_config = app_config
         self._executor = ThreadPoolExecutor(max_workers=8)
         self._halt_event = Event()
-        self._run_in_progress = False
-        self._run_paused = False
+
+        self._run_initialized = Event()
+        self._run_in_progress = Event()
+        self._run_paused = Event()
 
         self._recognition_queue: multiprocessing.Queue = multiprocessing.Queue()
         self._uart_read: queue.Queue = queue.Queue()
@@ -49,7 +52,7 @@ class RebuilderApplication:
         self._halt_event.clear()
         self._webserver.start()
         self._uart_communicator.start()
-        self._executor.submit(self._handle_web_data)
+        self._executor.submit(self._handle_web_actions)
         self._executor.submit(self._handle_uart_messages)
         self._executor.submit(self._process_recognition_result)
         self._logger.info('Rebuilder application processes started')
@@ -77,20 +80,34 @@ class RebuilderApplication:
         self._stream_processing.halt()
         self._uart_communicator.halt()
 
-    def _handle_web_data(self) -> None:
-        """Handles incoming web data."""
-        self._logger.info('Entering web data handling loop')
+    def _handle_web_actions(self) -> None:
+        """Handles incoming web actions."""
+        self._logger.info('Entering web actions handling loop')
         while not self._halt_event.is_set():
             try:
-                data = self._web_queue.get(timeout=1.0)
-                if isinstance(data, Action):
-                    self._logger.info('Received web action: %s', data)
+                action = self._web_queue.get(timeout=1.0)
+                if isinstance(action, Action):
+                    self._logger.info('Received web action: %s', action)
+                    if action == Action.INIT:
+                        self._uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
+                        self._stream_processing.start()
+                        self._run_initialized.set()
+                    elif action in (Action.START, Action.STOP):
+                        self._handle_start_stop(start=action == Action.START, stop=action == Action.STOP)
+                    elif action == Action.RESTART:
+                        self._logger.info('Restarting application')
+                        subprocess.run(['systemctl', 'restart', 'pren-rebuilder.service'], check=False)
+                    elif action == Action.REBOOT:
+                        self._logger.info('Rebooting operating system')
+                        subprocess.run(['systemctl', 'reboot'], check=False)
+                    elif action == Action.RESET:
+                        self._uart_write.put(CommandBuilder.other_command(Command.RESET_WERNI))
                 else:
-                    self._logger.warning('Received data has wrong type: %s', type(data))
+                    self._logger.warning('Received data has wrong type: %s', type(action))
             except queue.Empty:
                 pass
 
-        self._logger.info('Exiting web data handling loop')
+        self._logger.info('Exiting web actions handling loop')
 
     def _handle_uart_messages(self) -> None:
         """Handles incoming UART messages."""
@@ -102,19 +119,11 @@ class RebuilderApplication:
                 self._logger.debug('Received UART message: %s', cmd)
 
                 if cmd == Command.SEND_IO_STATE:
-                    btn_stop_state = ButtonState(message.data.send_io_state.btn_stop)
-                    if btn_stop_state in (ButtonState.SHORT_CLICKED, ButtonState.LONG_CLICKED):
-                        self._logger.info('Pausing build')
-                        self._run_paused = True
-                        self._uart_write.put(CommandBuilder.other_command(Command.PAUSE_BUILD))
                     btn_start_state = ButtonState(message.data.send_io_state.btn_start)
-                    if btn_start_state in (ButtonState.SHORT_CLICKED, ButtonState.LONG_CLICKED):
-                        if self._run_paused:
-                            self._logger.info('Resuming build')
-                            self._run_paused = False
-                            self._uart_write.put(CommandBuilder.other_command(Command.RESUME_BUILD))
-                        else:
-                            self._start_run()
+                    btn_stop_state = ButtonState(message.data.send_io_state.btn_stop)
+                    start = btn_start_state in (ButtonState.SHORT_CLICKED, ButtonState.LONG_CLICKED)
+                    stop = btn_stop_state in (ButtonState.SHORT_CLICKED, ButtonState.LONG_CLICKED)
+                    self._handle_start_stop(start, stop)
                 if cmd == Command.EXECUTION_FINISHED:
                     exec_finished_cmd = Command(message.data.exec_finished.cmd)
                     self._logger.info('Finished command: %s', exec_finished_cmd)
@@ -158,31 +167,46 @@ class RebuilderApplication:
 
         self._logger.info('Exiting recognition result processing loop')
 
+    def _handle_start_stop(self, start: bool = False, stop: bool = False) -> None:
+        """Handles start and stop signals."""
+        if stop:
+            self._logger.info('Pausing build')
+            self._run_paused.set()
+            self._uart_write.put(CommandBuilder.other_command(Command.PAUSE_BUILD))
+        elif start:
+            if self._run_paused.is_set():
+                self._logger.info('Resuming build')
+                self._run_paused.clear()
+                self._uart_write.put(CommandBuilder.other_command(Command.RESUME_BUILD))
+            elif self._run_initialized.is_set():
+                self._start_run()
+            else:
+                self._logger.warning('Run not initialized yet')
+
     def _start_run(self) -> None:
         """Starts a new run if not already one in progress."""
-        if self._run_in_progress:
+        if self._run_in_progress.is_set():
             self._logger.warning('Run already in progress')
             return
 
         self._logger.info('Starting new run')
-        self._run_in_progress = True
+        self._run_in_progress.set()
         self._builder.reset()
         self._time.reset()
         self._time.start()
         self._cube_api.submit(self._cube_api.post_start)
-        self._uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
         self._uart_write.put(CommandBuilder.other_command(Command.RESET_ENERGY_MEASUREMENT))
-        self._stream_processing.start()
         self._stream_processing.start_recognition()
 
     def _finish_run(self) -> None:
         """Finishes the current run."""
-        if not self._run_in_progress:
+        if not self._run_in_progress.is_set():
             self._logger.warning('No run in progress')
             return
 
         self._logger.info('Finishing current run')
-        self._run_in_progress = False
+        self._run_initialized.clear()
+        self._run_in_progress.clear()
         self._time.stop()
         self._stream_processing.stop()
         self._cube_api.submit(self._cube_api.post_end)
