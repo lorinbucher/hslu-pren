@@ -76,6 +76,23 @@ The application logs can be accessed using `journalctl`:
 sudo journalctl -u pren-rebuilder.service -f
 ```
 
+To automatically start the chromium browser with the website, add the following line:
+
+X11:
+
+```shell
+# /etc/xdg/lxsession/LXDE-pi/autostart
+/opt/pren/chromium_start.sh
+```
+
+Wayland:
+
+```shell
+# /home/$USER/.config/wayfire.ini
+[autostart]
+runme = /opt/pren/chromium_start.sh
+```
+
 ## Development
 
 ### Code Quality Check
