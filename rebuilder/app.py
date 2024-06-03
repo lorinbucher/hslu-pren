@@ -151,6 +151,12 @@ class RebuilderApplication:
             try:
                 config = self._recognition_queue.get(timeout=1.0)
             except queue.Empty:
+                if self._run_in_progress.is_set() and not self._builder.is_running:
+                    if self._time.current > self._app_config.app_recognition_timeout:
+                        self._logger.warning('Recognition timeout passed, building default config')
+                        config = CubeConfiguration()
+                        config.set_default()
+                        self._recognition_queue.put(config)
                 continue
 
             if not isinstance(config, CubeConfiguration):

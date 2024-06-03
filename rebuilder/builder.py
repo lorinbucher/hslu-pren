@@ -2,6 +2,7 @@
 import logging
 import queue
 from enum import Enum
+from threading import Event
 
 from shared.enumerations import CubeColor
 from uart.command import MoveLift
@@ -21,7 +22,8 @@ class Builder:
     def __init__(self, uart_write: queue.Queue) -> None:
         self._logger = logging.getLogger('rebuilder.builder')
         self._uart_write = uart_write
-        self.rotated = 0
+        self._rotated = 0
+        self._in_progress = Event()
 
         self._config: list[CubeColor] = []
         self._pos: list[CubeColor] = []
@@ -31,6 +33,7 @@ class Builder:
 
     def reset(self) -> None:
         """Resets the state of the builder."""
+        self._in_progress.clear()
         self._config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED,
                         CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
         self._pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
@@ -47,6 +50,11 @@ class Builder:
         """Returns the current position."""
         return self._pos.copy()
 
+    @property
+    def is_running(self) -> bool:
+        """Returns true if the builder is already running."""
+        return self._in_progress.is_set()
+
     def set_config(self, config: list[CubeColor]) -> None:
         """Sets the cube configuration."""
         for i in range(4):
@@ -56,6 +64,7 @@ class Builder:
 
     def build(self, build_doubles_first: bool = False) -> None:
         """Builds the cube configuration, optionally trying to build doubles."""
+        self._in_progress.set()
         if build_doubles_first:
             self.build_doubles()
         self.build_whats_possible()
@@ -81,7 +90,7 @@ class Builder:
 
     def finish_build(self) -> None:
         """Returns the grid to the correct position and moves the lift down."""
-        self.rotate_grid(4 - self.rotated, rotate_pos=True)
+        self.rotate_grid(4 - self._rotated, rotate_pos=True)
         self._logger.info('Move lift down command queued')
         self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_DOWN))
 
@@ -103,7 +112,7 @@ class Builder:
             config = self._config[i]
             if config == CubeColor.NONE:
                 self._cube_states[i] = CubeState.PLACED
-            elif ((config == CubeColor.RED or config == CubeColor.BLUE or config == CubeColor.YELLOW) and
+            elif (config in (CubeColor.RED, CubeColor.BLUE, CubeColor.YELLOW) and
                   self._cube_states[i] == CubeState.UNKNOWN):
                 self._cube_states[i] = CubeState.NOTPLACED
 
@@ -166,7 +175,7 @@ class Builder:
             angle = times * 90
             self._logger.info('Rotating grid command queued: %s°', angle)
             self._uart_write.put(CommandBuilder.rotate_grid(angle))
-            self.rotated = self.rotated + times % 4
+            self._rotated = self._rotated + times % 4
             if rotate_pos:
                 self.move_pos(times)
 
