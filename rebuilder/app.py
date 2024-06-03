@@ -12,6 +12,7 @@ from uart.commandbuilder import CommandBuilder
 from uart.communicator import UartCommunicator
 from video.processing import StreamProcessing
 from web.api import CubeApi
+from web.server import WebServer
 from .builder import Builder
 from .measure import TimeMeasurement
 
@@ -34,6 +35,7 @@ class RebuilderApplication:
         self._builder = Builder(self._uart_write)
         self._cube_api = CubeApi(app_config)
         self._time = TimeMeasurement()
+        self._webserver = WebServer()
 
         self._stream_processing = StreamProcessing(app_config, self._recognition_queue)
         self._uart_communicator = UartCommunicator(app_config, self._uart_read, self._uart_write)
@@ -42,6 +44,7 @@ class RebuilderApplication:
         """Starts the rebuilder application processes."""
         self._logger.info('Starting rebuilder application processes')
         self._halt_event.clear()
+        self._webserver.start()
         self._uart_communicator.start()
         self._executor.submit(self._handle_uart_messages)
         self._executor.submit(self._process_recognition_result)

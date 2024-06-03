@@ -26,6 +26,7 @@ logging_config = {
     },
     'loggers': {
         'urllib3': {'level': 'INFO', },
+        'werkzeug': {'level': 'ERROR', },
     },
     'root': {
         'handlers': ['stdout', ],

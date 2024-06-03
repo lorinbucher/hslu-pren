@@ -1,7 +1,8 @@
 # App libraries
+flask==3.0.3
 numpy==1.26.4
 opencv-python==4.9.0.80
-requests==2.31.0
+requests==2.32.3
 pyserial==3.5
 
 # Linting

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WERNI</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>WERNI</h1>
+
+        <div class="patterns">
+            <div class="pattern">
+                <div class="box red"></div>
+                <div class="box yellow"></div>
+                <div class="box blue"></div>
+                <div class="box yellow"></div>
+            </div>
+            <div class="pattern">
+                <div class="box yellow"></div>
+                <div class="box red"></div>
+                <div class="box yellow"></div>
+                <div class="box yellow"></div>
+            </div>
+        </div>
+
+        <div class="status">
+            <p><strong>Started:</strong> 00:00:00</p>
+            <p><strong>Pattern Recognized:</strong> 00:00</p>
+            <p><strong>Stopped:</strong> 00:00</p>
+            <p><strong>Duration:</strong> 00:00:00</p>
+            <p><strong>Energy Consumption:</strong> 234132 Watt</p>
+            <p><strong>Build State:</strong> 50%</p>
+        </div>
+        
+    </div>
+
+    <div class="settings" style="display: none;">
+        <div class="patterns">
+            <div class="pattern">
+                <button class="box" onclick="changeColor(this)"></button>
+                <button class="box" onclick="changeColor(this)"></button>
+                <button class="box" onclick="changeColor(this)"></button>
+                <button class="box" onclick="changeColor(this)"></button>
+            </div>
+            <div class="pattern">
+                <button class="box" onclick="changeColor(this)"></button>
+                <button class="box" onclick="changeColor(this)"></button>
+                <button class="box" onclick="changeColor(this)"></button>
+                <button class="box" onclick="changeColor(this)"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn">Init</button>
+        <button class="btn">Start</button>
+        <button class="btn">Stop</button>
+        <button class="btn" onclick="toggleSettings()">Settings</button>
+    </div>
+
+    <div class="settings-buttons" style="display: none;">
+        <button class="btn">Cancel</button>
+        <button class="btn">Save</button>
+        <button class="btn">Restart</button>
+        <button class="btn" onclick="toggleSettings()">Home</button>
+    </div>
+
+</body>
+</html>
