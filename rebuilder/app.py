@@ -10,7 +10,7 @@ from threading import Event
 
 from shared.data import AppConfiguration, CubeConfiguration
 from shared.enumerations import Action
-from uart.command import ButtonState, BuzzerState, Command, LiftState, WerniState
+from uart.command import ButtonState, BuzzerState, Command, LiftState, MoveLift, WerniState
 from uart.commandbuilder import CommandBuilder
 from uart.communicator import UartCommunicator
 from video.processing import StreamProcessing
@@ -90,6 +90,7 @@ class RebuilderApplication:
                     self._logger.info('Received web action: %s', action)
                     if action == Action.INIT:
                         self._uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
+                        self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_UP))
                         self._stream_processing.start()
                         self._run_initialized.set()
                     elif action in (Action.START, Action.STOP):
@@ -127,7 +128,7 @@ class RebuilderApplication:
                 if cmd == Command.EXECUTION_FINISHED:
                     exec_finished_cmd = Command(message.data.exec_finished.cmd)
                     self._logger.info('Finished command: %s', exec_finished_cmd)
-                    if exec_finished_cmd == Command.MOVE_LIFT:
+                    if exec_finished_cmd == Command.MOVE_LIFT and self._run_in_progress.is_set():
                         self._uart_write.put(CommandBuilder.other_command(Command.GET_STATE))
                 if cmd == Command.SEND_STATE:
                     energy = self._convert_energy(message.data.send_state.energy)
