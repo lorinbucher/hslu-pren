@@ -1,12 +1,14 @@
 """Implements the 3D Re-Builder application."""
 import logging
+import multiprocessing
 import queue
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from multiprocessing import Event, Queue
+from threading import Event
 
 from shared.data import AppConfiguration, CubeConfiguration
+from shared.enumerations import Action
 from uart.command import ButtonState, BuzzerState, Command, LiftState, WerniState
 from uart.commandbuilder import CommandBuilder
 from uart.communicator import UartCommunicator
@@ -28,14 +30,15 @@ class RebuilderApplication:
         self._run_in_progress = False
         self._run_paused = False
 
-        self._recognition_queue: Queue = Queue()
+        self._recognition_queue: multiprocessing.Queue = multiprocessing.Queue()
         self._uart_read: queue.Queue = queue.Queue()
         self._uart_write: queue.Queue = queue.Queue()
+        self._web_queue: queue.Queue = queue.Queue()
 
         self._builder = Builder(self._uart_write)
         self._cube_api = CubeApi(app_config)
         self._time = TimeMeasurement()
-        self._webserver = WebServer()
+        self._webserver = WebServer(self._web_queue)
 
         self._stream_processing = StreamProcessing(app_config, self._recognition_queue)
         self._uart_communicator = UartCommunicator(app_config, self._uart_read, self._uart_write)
@@ -46,6 +49,7 @@ class RebuilderApplication:
         self._halt_event.clear()
         self._webserver.start()
         self._uart_communicator.start()
+        self._executor.submit(self._handle_web_data)
         self._executor.submit(self._handle_uart_messages)
         self._executor.submit(self._process_recognition_result)
         self._logger.info('Rebuilder application processes started')
@@ -72,6 +76,21 @@ class RebuilderApplication:
         self._halt_event.set()
         self._stream_processing.halt()
         self._uart_communicator.halt()
+
+    def _handle_web_data(self) -> None:
+        """Handles incoming web data."""
+        self._logger.info('Entering web data handling loop')
+        while not self._halt_event.is_set():
+            try:
+                data = self._web_queue.get(timeout=1.0)
+                if isinstance(data, Action):
+                    self._logger.info('Received web action: %s', data)
+                else:
+                    self._logger.warning('Received data has wrong type: %s', type(data))
+            except queue.Empty:
+                pass
+
+        self._logger.info('Exiting web data handling loop')
 
     def _handle_uart_messages(self) -> None:
         """Handles incoming UART messages."""

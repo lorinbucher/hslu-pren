@@ -33,30 +33,34 @@ python3 -m pip install -r /opt/pren/requirements.txt
 
 ## Configuration
 
-```toml
-# /opt/pren/config.toml
-[api]
-address = "oawz3wjih1.execute-api.eu-central-1.amazonaws.com"
-team_nr = "03"
-token = "<auth_token>"
+Add the configuration file to `/opt/pren/config.json`:
 
-[rtsp]
-address = "147.88.48.131"
-user = "pren"
-password = "<password>"
-profile = "pren_profile_med" # pren_profile_small
-
-[serial]
-baud_rate = 115200
-read = "/dev/ttyAMA0"
-write = "/dev/ttyAMA0"
-
-[app]
-confidence = 25
-recognition_timeout = 60
-incremental_build = false
-efficiency_mode = false
-fast_mode = false
+```json
+{
+  "api": {
+    "address": "oawz3wjih1.execute-api.eu-central-1.amazonaws.com",
+    "team_nr": "03",
+    "token": "<auth_token>"
+  },
+  "app": {
+    "confidence": 25,
+    "efficiency_mode": false,
+    "fast_mode": false,
+    "incremental_build": false,
+    "recognition_timeout": 60
+  },
+  "rtsp": {
+    "address": "147.88.48.131",
+    "password": "<password>",
+    "profile": "pren_profile_med",
+    "user": "pren"
+  },
+  "serial": {
+    "baud_rate": 115200,
+    "read": "/dev/ttyAMA0",
+    "write": "/dev/ttyAMA0"
+  }
+}
 ```
 
 ## Deployment

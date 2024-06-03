@@ -5,34 +5,17 @@ import os
 import signal
 import subprocess
 import sys
-import tomllib
 from threading import Event
 
 import shared.config as app_config
 from rebuilder.app import RebuilderApplication
 from shared.data import AppConfiguration
 
-CONFIG_FILE = 'config.toml'
-
-
-def _parse_config() -> dict:
-    """Parses the configuration file."""
-    # pylint: disable=possibly-used-before-assignment
-    try:
-        logger.info('Parsing configuration file: %s', CONFIG_FILE)
-        with open(CONFIG_FILE, 'rb') as config_file:
-            return tomllib.load(config_file)
-    except (FileNotFoundError, PermissionError) as error:
-        logger.error('Failed to read config.toml file: %s', error)
-    except tomllib.TOMLDecodeError as error:
-        logger.error('Failed to parse config.toml file: %s', error)
-    sys.exit(1)
-
 
 def _validate_config(conf: AppConfiguration) -> None:
     """Validates the configuration of the application."""
     # pylint: disable=possibly-used-before-assignment
-    logger.info('Validating configuration file: %s', CONFIG_FILE)
+    logger.info('Validating configuration file: %s', app_config.CONFIG_FILE)
     is_valid, error = conf.validate()
     if is_valid:
         logger.info('Configuration is valid')
@@ -59,12 +42,12 @@ def _notify_systemd() -> None:
 
 
 if __name__ == '__main__':
-    logging.config.dictConfig(app_config.logging_config)
+    logging.config.dictConfig(app_config.LOGGING_CONFIG)
     logger = logging.getLogger('main')
 
     # Parse configuration file
     config = AppConfiguration()
-    config.from_dict(_parse_config())
+    config.from_dict(app_config.read_config_file())
     _validate_config(config)
 
     # Handle signals

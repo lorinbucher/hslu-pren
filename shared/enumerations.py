@@ -2,6 +2,16 @@
 from enum import StrEnum
 
 
+class Action(StrEnum):
+    """The actions that can be triggered from the website."""
+    INIT = 'init'
+    START = 'start'
+    STOP = 'stop'
+    RESTART = 'restart'
+    REBOOT = 'reboot'
+    RESET = 'reset'
+
+
 class CubeColor(StrEnum):
     """The colors a cube in the configuration can have.
 

@@ -1,0 +1,29 @@
+### POST action
+// @no-log
+POST http://localhost:5000/action
+Content-Type: application/json
+
+{
+  "action": "start"
+}
+
+### GET settings
+// @no-log
+GET http://localhost:5000/settings
+
+### POST settings
+// @no-log
+POST http://localhost:5000/settings
+Content-Type: application/json
+
+{
+  "confidence": 25,
+  "efficiency_mode": false,
+  "fast_mode": false,
+  "incremental_build": false,
+  "recognition_timeout": 60
+}
+
+### GET status
+// @no-log
+GET http://localhost:5000/status
