@@ -1,6 +1,7 @@
 """Implements the Cube API."""
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import Any, Callable
 
@@ -17,16 +18,17 @@ class CubeApi:
         self._address = app_config.api_address
         self._team_nr = app_config.api_team_nr
         self._auth_token = app_config.api_token
+        self._executor = ThreadPoolExecutor(max_workers=1)
 
-    @staticmethod
-    def send_with_retry(request: Callable, *args: Any) -> None:
-        """Retries sending the request if it failed."""
-        for i in range(5):
-            if not request(*args):
-                interval = 0.2 * (i + 1)
-                time.sleep(interval)
-            else:
-                break
+    def submit(self, request: Callable, *args: Any) -> None:
+        """Submits a new request to execute."""
+        self._logger.info('Submitting new request to execute')
+        self._executor.submit(self._send_with_retry, request, *args)
+
+    def shutdown(self) -> None:
+        """Shuts the executor down."""
+        self._logger.info('Shutting down executor')
+        self._executor.shutdown()
 
     def get_availability(self) -> bool:
         """Sends a GET request to the availability endpoint."""
@@ -93,3 +95,13 @@ class CubeApi:
             return response.json()
         except requests.exceptions.JSONDecodeError:
             return response.text
+
+    @staticmethod
+    def _send_with_retry(request: Callable, *args: Any) -> None:
+        """Retries sending the request if it failed."""
+        for i in range(5):
+            if not request(*args):
+                interval = 0.2 * (i + 1)
+                time.sleep(interval)
+            else:
+                break

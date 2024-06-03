@@ -65,6 +65,7 @@ class RebuilderApplication:
         self._logger.info('Stopping rebuilder application processes')
         self._stream_processing.stop()
         self._uart_communicator.stop(reader=True, writer=True)
+        self._cube_api.shutdown()
         self._executor.shutdown()
         self._logger.info('Rebuilder application processes stopped')
 
@@ -133,7 +134,7 @@ class RebuilderApplication:
             if config.completed():
                 self._logger.info('Received complete configuration: %s', config.to_dict())
                 self._time.stop_config()
-                self._executor.submit(CubeApi.send_with_retry, self._cube_api.post_config, config, datetime.now())
+                self._cube_api.submit(self._cube_api.post_config, config, datetime.now())
                 self._builder.set_config(config.config)
                 self._builder.build(build_doubles_first=True)
 
@@ -174,7 +175,7 @@ class RebuilderApplication:
         self._builder.reset()
         self._time.reset()
         self._time.start()
-        self._executor.submit(CubeApi.send_with_retry, self._cube_api.post_start)
+        self._cube_api.submit(self._cube_api.post_start)
         self._uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
         self._uart_write.put(CommandBuilder.other_command(Command.RESET_ENERGY_MEASUREMENT))
         self._stream_processing.start_recognition()
@@ -189,7 +190,8 @@ class RebuilderApplication:
         self._run_in_progress = False
         self._time.stop()
         self._stream_processing.stop_recognition()
-        self._executor.submit(CubeApi.send_with_retry, self._cube_api.post_end)
+        self._cube_api.submit(self._cube_api.post_end)
+        self._cube_api.submit(self._cube_api.get_config)
         self._logger.info('Run completed - config: %.3fs, total: %.3fs', self._time.config, self._time.total)
         self._executor.submit(self._buzzer)
 
