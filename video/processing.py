@@ -19,7 +19,7 @@ class StreamProcessing:
         self._logger = logging.getLogger('video.stream_processing')
         self._app_config = app_config
         self._builder_queue = builder_queue
-        self._halt = Event()
+        self._halt_event = Event()
         self._recognition = Event()
         self._process: Process | None = None
         self._capture: cv2.VideoCapture | None = None
@@ -29,16 +29,10 @@ class StreamProcessing:
     def start(self) -> None:
         """Starts the video stream processing."""
         self._logger.info('Starting video stream processing')
+        self._halt_event.clear()
         self._process = Process(target=self._run)
         self._process.start()
         self._logger.info('Video stream processing started')
-
-    def join(self) -> None:
-        """Waits for the video stream processing to complete."""
-        if self._process is not None:
-            self._logger.info('Waiting for video stream processing to complete')
-            self._process.join()
-            self._logger.info('Video stream processing completed')
 
     def stop(self) -> None:
         """Stops the video stream processing."""
@@ -51,18 +45,7 @@ class StreamProcessing:
     def halt(self) -> None:
         """Sends the halt event to builder task."""
         self._logger.info('Halting video stream processing')
-        self._halt.set()
-
-    def halted(self) -> bool:
-        """Returns true if the halt event is set, false if not."""
-        return self._halt.is_set()
-
-    def alive(self) -> bool:
-        """Returns true if the video stream process is alive, false if not."""
-        result = self._process is not None and self._process.is_alive()
-        if not result:
-            self._logger.warning('Video stream processing not alive')
-        return result
+        self._halt_event.set()
 
     def start_recognition(self) -> None:
         """Starts the cube image recognition."""
@@ -79,7 +62,7 @@ class StreamProcessing:
         self._logger.info('Video stream process started')
         futures: list[concurrent.futures.Future] = []
         with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
-            while not self._halt.is_set():
+            while not self._halt_event.is_set():
                 frame = self._read_frame()
                 if not self._recognition.is_set():
                     self._cube_config.reset()
@@ -144,4 +127,3 @@ class StreamProcessing:
             self._builder_queue.put(self._cube_config)
             if self._cube_config.completed():
                 self._logger.info('Cube configuration completed')
-                self.stop_recognition()

@@ -42,11 +42,9 @@ class RebuilderApplication:
         """Starts the rebuilder application processes."""
         self._logger.info('Starting rebuilder application processes')
         self._halt_event.clear()
-        self._stream_processing.start()
         self._uart_communicator.start()
         self._executor.submit(self._handle_uart_messages)
         self._executor.submit(self._process_recognition_result)
-        self._executor.submit(self._processes_alive_check)
         self._logger.info('Rebuilder application processes started')
 
     def join(self) -> None:
@@ -54,8 +52,6 @@ class RebuilderApplication:
         self._logger.info('Waiting for rebuilder application processes to complete')
         while not self._halt_event.is_set():
             time.sleep(1.0)
-            if self._stream_processing.alive():
-                self._stream_processing.join()
         self._logger.info('Rebuilder application processes completed')
 
     def stop(self) -> None:
@@ -135,18 +131,10 @@ class RebuilderApplication:
                 self._cube_api.submit(self._cube_api.post_config, config, datetime.now())
                 self._builder.set_config(config.config)
                 self._builder.build(build_doubles_first=True)
+                self._stream_processing.halt()
+                self._stream_processing.stop_recognition()
 
         self._logger.info('Exiting recognition result processing loop')
-
-    def _processes_alive_check(self) -> None:
-        """Checks if all processes are still alive."""
-        self._logger.info('Entering processes alive check loop')
-        while not self._halt_event.is_set():
-            time.sleep(1)
-            if not self._stream_processing.halted() and not self._stream_processing.alive():
-                self._stream_processing.start()
-
-        self._logger.info('Exiting processes alive check loop')
 
     def _start_run(self) -> None:
         """Starts a new run if not already one in progress."""
@@ -156,22 +144,13 @@ class RebuilderApplication:
 
         self._logger.info('Starting new run')
         self._run_in_progress = True
-        try:
-            while not self._recognition_queue.empty() and not self._halt_event.is_set():
-                self._recognition_queue.get_nowait()
-            while not self._uart_read.empty() and not self._halt_event.is_set():
-                self._uart_read.get_nowait()
-            while not self._uart_write.empty() and not self._halt_event.is_set():
-                self._uart_write.get_nowait()
-        except queue.Empty:
-            pass
-
         self._builder.reset()
         self._time.reset()
         self._time.start()
         self._cube_api.submit(self._cube_api.post_start)
         self._uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
         self._uart_write.put(CommandBuilder.other_command(Command.RESET_ENERGY_MEASUREMENT))
+        self._stream_processing.start()
         self._stream_processing.start_recognition()
 
     def _finish_run(self) -> None:
@@ -183,7 +162,7 @@ class RebuilderApplication:
         self._logger.info('Finishing current run')
         self._run_in_progress = False
         self._time.stop()
-        self._stream_processing.stop_recognition()
+        self._stream_processing.stop()
         self._cube_api.submit(self._cube_api.post_end)
         self._cube_api.submit(self._cube_api.get_config)
         self._logger.info('Run completed - config: %.3fs, total: %.3fs', self._time.config, self._time.total)
