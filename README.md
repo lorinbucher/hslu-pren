@@ -56,6 +56,7 @@ confidence = 25
 recognition_timeout = 60
 incremental_build = false
 efficiency_mode = false
+fast_mode = false
 ```
 
 ## Deployment
