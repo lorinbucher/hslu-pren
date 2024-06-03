@@ -10,12 +10,14 @@ class TimeMeasurement:
         self._logger = logging.getLogger('rebuilder')
         self._start_time = 0.0
         self._stop_time = 0.0
+        self._config_time = 0.0
 
     def reset(self) -> None:
         """Resets the time measurement."""
         self._logger.info('Resetting time measurement')
         self._start_time = 0.0
         self._stop_time = 0.0
+        self._config_time = 0.0
 
     def start(self) -> None:
         """Starts the time measurement."""
@@ -27,10 +29,22 @@ class TimeMeasurement:
         self._logger.info('Stopping time measurement')
         self._stop_time = time.perf_counter()
 
-    def current_runtime(self) -> float:
+    def stop_config(self) -> None:
+        """Stops the config time measurement."""
+        self._logger.info('Stopping config time measurement')
+        self._config_time = time.perf_counter()
+
+    @property
+    def config(self) -> float:
+        """Returns the config runtime."""
+        return self._config_time - self._start_time
+
+    @property
+    def current(self) -> float:
         """Returns the current runtime."""
         return time.perf_counter() - self._start_time
 
-    def total_runtime(self) -> float:
+    @property
+    def total(self) -> float:
         """Returns the total runtime."""
         return self._stop_time - self._start_time
