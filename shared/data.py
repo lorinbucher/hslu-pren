@@ -1,5 +1,6 @@
 """Shared data classes that are used in different parts of the application."""
 from dataclasses import dataclass, field
+from typing import Any
 
 from shared.enumerations import CubeColor
 
@@ -7,45 +8,73 @@ from shared.enumerations import CubeColor
 @dataclass
 class AppConfiguration:
     """The configuration for the application."""
-    api_address: str = ''
-    api_team_nr: str = ''
+    api_address: str = 'oawz3wjih1.execute-api.eu-central-1.amazonaws.com'
+    api_team_nr: str = '03'
     api_token: str = ''
 
-    rtsp_address: str = ''
-    rtsp_user: str = ''
+    rtsp_address: str = '147.88.48.131'
+    rtsp_user: str = 'pren'
     rtsp_password: str = ''
-    rtsp_profile: str = ''
+    rtsp_profile: str = 'pren_profile_med'
 
-    serial_baud_rate: int = 0
-    serial_read: str = ''
-    serial_write: str = ''
+    serial_baud_rate: int = 115200
+    serial_read: str = '/dev/ttyAMA0'
+    serial_write: str = '/dev/ttyAMA0'
 
-    app_confidence: int = 0
-    app_recognition_timeout: int = 0
-    app_incremental_build: bool = False
     app_efficiency_mode: bool = False
     app_fast_mode: bool = False
+    app_incremental_build: bool = False
+    app_confidence: int = 25
+    app_recognition_timeout: int = 180
 
     def from_dict(self, data: dict) -> None:
         """Reads the app configuration from a dictionary."""
-        self.api_address = data.get('api', {}).get('address', '')
-        self.api_team_nr = data.get('api', {}).get('team_nr', '')
-        self.api_token = data.get('api', {}).get('token', '')
+        self.api_address = data.get('api', {}).get('address', self.api_address)
+        self.api_team_nr = data.get('api', {}).get('team_nr', self.api_team_nr)
+        self.api_token = data.get('api', {}).get('token', self.api_token)
 
-        self.rtsp_address = data.get('rtsp', {}).get('address', '')
-        self.rtsp_user = data.get('rtsp', {}).get('user', '')
-        self.rtsp_password = data.get('rtsp', {}).get('password', '')
-        self.rtsp_profile = data.get('rtsp', {}).get('profile', '')
+        self.rtsp_address = data.get('rtsp', {}).get('address', self.rtsp_address)
+        self.rtsp_user = data.get('rtsp', {}).get('user', self.rtsp_user)
+        self.rtsp_password = data.get('rtsp', {}).get('password', self.rtsp_password)
+        self.rtsp_profile = data.get('rtsp', {}).get('profile', self.rtsp_profile)
 
-        self.serial_baud_rate = data.get('serial', {}).get('baud_rate', 0)
-        self.serial_read = data.get('serial', {}).get('read', '')
-        self.serial_write = data.get('serial', {}).get('write', '')
+        self.serial_baud_rate = data.get('serial', {}).get('baud_rate', self.serial_baud_rate)
+        self.serial_read = data.get('serial', {}).get('read', self.serial_read)
+        self.serial_write = data.get('serial', {}).get('write', self.serial_write)
 
-        self.app_confidence = data.get('app', {}).get('confidence', 0)
-        self.app_recognition_timeout = data.get('app', {}).get('recognition_timeout', 0)
-        self.app_incremental_build = data.get('app', {}).get('incremental_build', False)
-        self.app_efficiency_mode = data.get('app', {}).get('efficiency_mode', False)
-        self.app_fast_mode = data.get('app', {}).get('fast_mode', False)
+        self.app_efficiency_mode = data.get('app', {}).get('efficiency_mode', self.app_efficiency_mode)
+        self.app_fast_mode = data.get('app', {}).get('fast_mode', self.app_fast_mode)
+        self.app_incremental_build = data.get('app', {}).get('incremental_build', self.app_incremental_build)
+        self.app_confidence = data.get('app', {}).get('confidence', self.app_confidence)
+        self.app_recognition_timeout = data.get('app', {}).get('recognition_timeout', self.app_recognition_timeout)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Converts the app configuration to a dictionary."""
+        return {
+            'app': {
+                'efficiency_mode': self.app_efficiency_mode,
+                'fast_mode': self.app_fast_mode,
+                'incremental_build': self.app_incremental_build,
+                'confidence': self.app_confidence,
+                'recognition_timeout': self.app_recognition_timeout
+            },
+            'api': {
+                'address': self.api_address,
+                'team_nr': self.api_team_nr,
+                'token': self.api_token
+            },
+            'rtsp': {
+                'address': self.rtsp_address,
+                'user': self.rtsp_user,
+                'password': self.rtsp_password,
+                'profile': self.rtsp_profile
+            },
+            'serial': {
+                'baud_rate': self.serial_baud_rate,
+                'read': self.serial_read,
+                'write': self.serial_write
+            },
+        }
 
     def validate(self) -> tuple[bool, str]:
         """Validates the configuration of the application."""
@@ -104,3 +133,10 @@ class CubeConfiguration:
         for index, value in enumerate(self.config):
             data[str(index + 1)] = str(value)
         return data
+
+    def set_default(self) -> None:
+        """Sets the default configuration used if the cube image recognition fails."""
+        self.config = [
+            CubeColor.RED, CubeColor.BLUE, CubeColor.YELLOW, CubeColor.BLUE,
+            CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE
+        ]

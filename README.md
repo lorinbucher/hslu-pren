@@ -37,23 +37,23 @@ Add the configuration file to `/opt/pren/config.json`:
 
 ```json
 {
+  "app": {
+    "efficiency_mode": false,
+    "fast_mode": false,
+    "incremental_build": false,
+    "confidence": 25,
+    "recognition_timeout": 180
+  },
   "api": {
     "address": "oawz3wjih1.execute-api.eu-central-1.amazonaws.com",
     "team_nr": "03",
     "token": "<auth_token>"
   },
-  "app": {
-    "confidence": 25,
-    "efficiency_mode": false,
-    "fast_mode": false,
-    "incremental_build": false,
-    "recognition_timeout": 60
-  },
   "rtsp": {
     "address": "147.88.48.131",
+    "user": "pren",
     "password": "<password>",
-    "profile": "pren_profile_med",
-    "user": "pren"
+    "profile": "pren_profile_med"
   },
   "serial": {
     "baud_rate": 115200,

@@ -48,6 +48,7 @@ if __name__ == '__main__':
     # Parse configuration file
     config = AppConfiguration()
     config.from_dict(app_config.read_config_file())
+    app_config.write_config_file(config.to_dict())
     _validate_config(config)
 
     # Handle signals

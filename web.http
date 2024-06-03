@@ -4,7 +4,7 @@ POST http://localhost:5000/action
 Content-Type: application/json
 
 {
-  "action": "start"
+  "action": "init"
 }
 
 ### GET settings
