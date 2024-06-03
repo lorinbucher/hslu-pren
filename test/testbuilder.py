@@ -1,6 +1,6 @@
 """Unit tests for the build algorithm."""
+import queue
 import unittest
-from multiprocessing import Queue
 
 from rebuilder.builder import Builder, CubeState
 from shared.enumerations import CubeColor
@@ -11,7 +11,7 @@ class TestBuildAlgorithm(unittest.TestCase):
     """Test class for the build algorithm."""
 
     def test_move_pos(self):
-        builder = Builder(Queue())
+        builder = Builder(queue.Queue())
 
         # Move array left by 1
         builder.reset()
@@ -44,7 +44,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertEqual(builder.pos, [CubeColor.YELLOW, CubeColor.BLUE, CubeColor.NONE, CubeColor.RED])
 
     def test_rotate_grid(self):
-        uart_write = Queue()
+        uart_write = queue.Queue()
         builder = Builder(uart_write)
 
         builder.rotate_grid(-5)
@@ -97,7 +97,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertEqual(message.data.rotate_grid.degrees, 90)
 
     def test_place_cubes(self):
-        uart_write = Queue()
+        uart_write = queue.Queue()
         builder = Builder(uart_write)
 
         builder.place_cubes([False, False, False, False])
@@ -160,7 +160,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertTrue(Builder.array_false([False, False, False, False]))
 
     def test_match_with_config(self):
-        builder = Builder(Queue())
+        builder = Builder(queue.Queue())
         matches, config = builder.match_with_config([CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE])
         self.assertEqual([False, True, True, True], matches)
         self.assertEqual([CubeColor.NONE, CubeColor.NONE, CubeColor.NONE, CubeColor.NONE], config)
@@ -174,7 +174,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertEqual(False, Builder.config_none([CubeColor.RED, CubeColor.NONE, CubeColor.NONE, CubeColor.NONE]))
 
     def test_build_config_1(self):
-        uart_write = Queue()
+        uart_write = queue.Queue()
         builder = Builder(uart_write)
 
         builder.build_config([CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE])
@@ -185,7 +185,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertEqual(message.data.place_cubes.cubes_blue, 1)
 
     def test_build_config_2(self):
-        uart_write = Queue()
+        uart_write = queue.Queue()
         builder = Builder(uart_write)
 
         builder.build_config([CubeColor.RED, CubeColor.RED, CubeColor.RED, CubeColor.RED])
@@ -229,14 +229,14 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertTrue(uart_write.empty())
 
     def test_update_cube_state(self):
-        builder = Builder(Queue())
+        builder = Builder(queue.Queue())
         builder.update_cube_states()
         self.assertEqual(
             [CubeState.NOTPLACED, CubeState.NOTPLACED, CubeState.PLACED, CubeState.NOTPLACED, CubeState.NOTPLACED,
              CubeState.NOTPLACED, CubeState.PLACED, CubeState.NOTPLACED], builder.cube_states)
 
     def test_build_1(self):
-        uart_write = Queue()
+        uart_write = queue.Queue()
         builder = Builder(uart_write)
 
         builder.set_config(
@@ -274,7 +274,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertEqual(message.data.move_lift, 1)
 
     def test_build_2(self):
-        uart_write = Queue()
+        uart_write = queue.Queue()
         builder = Builder(uart_write)
 
         builder.set_config(
@@ -328,7 +328,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertEqual(message.data.move_lift, 1)
 
     def test_build_3(self):
-        uart_write = Queue()
+        uart_write = queue.Queue()
         builder = Builder(uart_write)
 
         builder.set_config(
@@ -401,7 +401,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertEqual(message.data.move_lift, 1)
 
     def test_build_with_doubles_first_1(self):
-        uart_write = Queue()
+        uart_write = queue.Queue()
         builder = Builder(uart_write)
 
         builder.set_config(
@@ -439,7 +439,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         self.assertEqual(message.data.move_lift, 1)
 
     def test_build_with_doubles_first_2(self):
-        uart_write = Queue()
+        uart_write = queue.Queue()
         builder = Builder(uart_write)
 
         builder.set_config(

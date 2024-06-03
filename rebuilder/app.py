@@ -28,8 +28,8 @@ class RebuilderApplication:
         self._run_paused = False
 
         self._recognition_queue: Queue = Queue()
-        self._uart_read: Queue = Queue()
-        self._uart_write: Queue = Queue()
+        self._uart_read: queue.Queue = queue.Queue()
+        self._uart_write: queue.Queue = queue.Queue()
 
         self._builder = Builder(self._uart_write)
         self._cube_api = CubeApi(app_config)
@@ -43,7 +43,7 @@ class RebuilderApplication:
         self._logger.info('Starting rebuilder application processes')
         self._halt_event.clear()
         self._stream_processing.start()
-        self._uart_communicator.start(reader=True, writer=True)
+        self._uart_communicator.start()
         self._executor.submit(self._handle_uart_messages)
         self._executor.submit(self._process_recognition_result)
         self._executor.submit(self._processes_alive_check)
@@ -56,17 +56,15 @@ class RebuilderApplication:
             time.sleep(1.0)
             if self._stream_processing.alive():
                 self._stream_processing.join()
-            if self._uart_communicator.alive(reader=True, writer=True):
-                self._uart_communicator.join(reader=True, writer=True)
         self._logger.info('Rebuilder application processes completed')
 
     def stop(self) -> None:
         """Stops the rebuilder application processes."""
         self._logger.info('Stopping rebuilder application processes')
-        self._stream_processing.stop()
-        self._uart_communicator.stop(reader=True, writer=True)
         self._cube_api.shutdown()
         self._executor.shutdown()
+        self._stream_processing.stop()
+        self._uart_communicator.shutdown()
         self._logger.info('Rebuilder application processes stopped')
 
     def halt(self) -> None:
@@ -74,7 +72,7 @@ class RebuilderApplication:
         self._logger.info('Halting rebuilder application processes')
         self._halt_event.set()
         self._stream_processing.halt()
-        self._uart_communicator.halt(reader=True, writer=True)
+        self._uart_communicator.halt()
 
     def _handle_uart_messages(self) -> None:
         """Handles incoming UART messages."""
@@ -147,10 +145,6 @@ class RebuilderApplication:
             time.sleep(1)
             if not self._stream_processing.halted() and not self._stream_processing.alive():
                 self._stream_processing.start()
-            if not self._uart_communicator.halted(reader=True) and not self._uart_communicator.alive(reader=True):
-                self._uart_communicator.start(reader=True)
-            if not self._uart_communicator.halted(writer=True) and not self._uart_communicator.alive(writer=True):
-                self._uart_communicator.start(writer=True)
 
         self._logger.info('Exiting processes alive check loop')
 

@@ -1,7 +1,7 @@
 """Implements the build algorithm."""
 import logging
+import queue
 from enum import Enum
-from multiprocessing import Queue
 
 from shared.enumerations import CubeColor
 from uart.command import MoveLift
@@ -18,7 +18,7 @@ class CubeState(Enum):
 class Builder:
     """Sends the commands using the UART communication protocol to build the detected cube configuration."""
 
-    def __init__(self, uart_write: Queue) -> None:
+    def __init__(self, uart_write: queue.Queue) -> None:
         self._logger = logging.getLogger('rebuilder.builder')
         self._uart_write = uart_write
         self.rotated = 0
