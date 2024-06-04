@@ -8,65 +8,80 @@
     <script src="script.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <h1>WERNI</h1>
+<div id="home" class="page active">
+    <h1>WERNI - Team 03</h1>
 
-        <div class="patterns">
-            <div class="pattern">
-                <div class="box red"></div>
-                <div class="box yellow"></div>
-                <div class="box blue"></div>
-                <div class="box yellow"></div>
-            </div>
-            <div class="pattern">
-                <div class="box yellow"></div>
-                <div class="box red"></div>
-                <div class="box yellow"></div>
-                <div class="box yellow"></div>
-            </div>
+    <div class="config">
+        <div class="config-layer">
+            <div id="cube-4" class="config-cube unknown"></div>
+            <div id="cube-3" class="config-cube unknown"></div>
+            <div id="cube-1" class="config-cube unknown"></div>
+            <div id="cube-2" class="config-cube unknown"></div>
+            <span>Bottom Layer</span>
         </div>
-
-        <div class="status">
-            <p><strong>Started:</strong> 00:00:00</p>
-            <p><strong>Pattern Recognized:</strong> 00:00</p>
-            <p><strong>Stopped:</strong> 00:00</p>
-            <p><strong>Duration:</strong> 00:00:00</p>
-            <p><strong>Energy Consumption:</strong> 234132 Watt</p>
-            <p><strong>Build State:</strong> 50%</p>
-        </div>
-        
-    </div>
-
-    <div class="settings" style="display: none;">
-        <div class="patterns">
-            <div class="pattern">
-                <button class="box" onclick="changeColor(this)"></button>
-                <button class="box" onclick="changeColor(this)"></button>
-                <button class="box" onclick="changeColor(this)"></button>
-                <button class="box" onclick="changeColor(this)"></button>
-            </div>
-            <div class="pattern">
-                <button class="box" onclick="changeColor(this)"></button>
-                <button class="box" onclick="changeColor(this)"></button>
-                <button class="box" onclick="changeColor(this)"></button>
-                <button class="box" onclick="changeColor(this)"></button>
-            </div>
+        <div class="config-layer">
+            <div id="cube-8" class="config-cube unknown"></div>
+            <div id="cube-7" class="config-cube unknown"></div>
+            <div id="cube-5" class="config-cube unknown"></div>
+            <div id="cube-6" class="config-cube unknown"></div>
+            <span>Top Layer</span>
         </div>
     </div>
 
-    <div class="controls">
-        <button class="btn">Init</button>
-        <button class="btn">Start</button>
-        <button class="btn">Stop</button>
-        <button class="btn" onclick="toggleSettings()">Settings</button>
+    <div class="status">
+        <div class="status-grid">
+            <span><strong>Status:</strong></span><span id="status-value">idle</span>
+            <span><strong>Start Time:</strong></span><span id="start-time-value">00:00:00.000</span>
+            <span><strong>Start to Config:</strong></span><span id="config-time-value">0.000s</span>
+            <span><strong>Start to End:</strong></span><span id="end-time-value">0.000s</span>
+            <span><strong>Energy Usage:</strong></span><span id="energy-value">0.000 Wh</span>
+            <label for="build-progress"><strong>Build Progress:</strong></label>
+            <span id="build-progress-value">0%</span>
+        </div>
+        <progress id="build-progress" class="status-progress" value="0" max="0"></progress>
     </div>
 
-    <div class="settings-buttons" style="display: none;">
-        <button class="btn">Cancel</button>
-        <button class="btn">Save</button>
-        <button class="btn">Restart</button>
-        <button class="btn" onclick="toggleSettings()">Home</button>
+    <div class="buttons">
+        <button id="btn-init" class="btn">Initialize</button>
+        <button id="btn-start" class="btn">Start Run</button>
+        <button id="btn-stop" class="btn">Pause Run</button>
+        <button id="btn-settings" class="btn">Settings</button>
     </div>
+</div>
+
+<div id="settings" class="page">
+    <h1>WERNI - Settings</h1>
+
+    <div class="settings">
+        <div class="settings-grid">
+            <input id="efficiency-mode" type="checkbox" name="efficiency-mode">
+            <label for="efficiency-mode"> Efficiency Mode</label>
+
+            <input id="fast-mode" type="checkbox" name="fast-mode">
+            <label for="fast-mode"> Fast Mode</label>
+
+            <input id="incremental-build" type="checkbox" name="incremental-build">
+            <label for="incremental-build"> Efficiency Mode</label>
+        </div>
+
+        <div class="settings-slider">
+            <label for="confidence">Confidence: <span id="confidence-value">25 frames</span></label>
+            <input id="confidence" type="range" min="10" max="100" step="5" value="25">
+
+            <label for="recognition-timeout">Recognition Timeout: <span
+                    id="recognition-timeout-value">180s</span></label>
+            <input id="recognition-timeout" type="range" min="60" max="210" step="10" value="180">
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button id="btn-save" class="btn">Save Settings</button>
+        <button id="btn-restart" class="btn">Restart App</button>
+        <button id="btn-reboot" class="btn">Reboot OS</button>
+        <button id="btn-reset" class="btn">Reset HW</button>
+        <button id="btn-home" class="btn">Home</button>
+    </div>
+</div>
 
 </body>
 </html>
