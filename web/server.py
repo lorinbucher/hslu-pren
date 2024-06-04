@@ -2,20 +2,23 @@
 import logging
 import queue
 import threading
+from dataclasses import asdict
 from typing import Any
 
 from flask import Flask, jsonify, request
 
 from shared.config import read_config_file, write_config_file
+from shared.data import StatusData
 from shared.enumerations import Action
 
 
 class WebServer:
     """Implements the web server used to serve the user interface."""
 
-    def __init__(self, web_queue: queue.Queue):
+    def __init__(self, web_queue: queue.Queue, status_data: StatusData):
         self._logger = logging.getLogger('web.server')
         self._web_queue = web_queue
+        self._status_data = status_data
         self._app = Flask('PREN 3D Re-Builder', static_url_path='')
         self._thread: threading.Thread | None = None
 
@@ -67,7 +70,7 @@ class WebServer:
 
         @self._app.route('/status', methods=['GET'])
         def _status():
-            return jsonify({}), 200
+            return jsonify(asdict(self._status_data)), 200
 
     @staticmethod
     def _validate_settings(data: dict[str, Any]) -> bool:

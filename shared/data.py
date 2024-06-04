@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from typing import Any
 
-from shared.enumerations import CubeColor
+from shared.enumerations import CubeColor, Status
 
 
 @dataclass
@@ -140,3 +140,33 @@ class CubeConfiguration:
             CubeColor.RED, CubeColor.BLUE, CubeColor.YELLOW, CubeColor.BLUE,
             CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE
         ]
+
+
+@dataclass
+class StatusData:
+    """Holds the status of the 3D Re-Builder application."""
+    config: list[CubeColor] = field(default_factory=lambda: [CubeColor.UNKNOWN for _ in range(8)])
+    energy: float = 0.0
+    status: Status = Status.IDLE
+    time_config: int = 0
+    time_end: int = 0
+    time_start: int = 0
+
+    def reset(self) -> None:
+        """Resets the status."""
+        self.config = [CubeColor.UNKNOWN for _ in range(8)]
+        self.energy = 0.0
+        self.status = Status.IDLE
+        self.time_config = 0
+        self.time_end = 0
+        self.time_start = 0
+
+    @property
+    def duration_config(self) -> float:
+        """Returns the duration until the configuration was detected."""
+        return (self.time_config - self.time_start) / 1_000_000_000
+
+    @property
+    def duration_total(self) -> float:
+        """Returns the total duration for the run."""
+        return (self.time_end - self.time_start) / 1_000_000_000

@@ -23,3 +23,12 @@ class CubeColor(StrEnum):
     BLUE = 'blue'
     RED = 'red'
     YELLOW = 'yellow'
+
+
+class Status(StrEnum):
+    """The status of the 3D Re-Builder application."""
+    IDLE = 'idle'
+    READY = 'ready'
+    RUNNING = 'running'
+    PAUSED = 'paused'
+    COMPLETED = 'completed'
