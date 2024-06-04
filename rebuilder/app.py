@@ -180,9 +180,12 @@ class RebuilderApplication:
     def _handle_start_stop(self, start: bool = False, stop: bool = False) -> None:
         """Handles start and stop signals."""
         if stop:
-            self._logger.info('Pausing build')
-            self._status.status = Status.PAUSED
-            self._uart_write.put(CommandBuilder.other_command(Command.PAUSE_BUILD))
+            if self._status.status == Status.RUNNING:
+                self._logger.info('Pausing build')
+                self._status.status = Status.PAUSED
+                self._uart_write.put(CommandBuilder.other_command(Command.PAUSE_BUILD))
+            else:
+                self._logger.warning('Run not started yet')
         elif start:
             if self._status.status == Status.PAUSED:
                 self._logger.info('Resuming build')
