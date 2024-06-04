@@ -124,6 +124,9 @@ class RebuilderApplication:
                 if cmd == Command.EXECUTION_FINISHED:
                     exec_finished = Command(message.data.exec_finished.cmd)
                     self._logger.info('Finished command: %s', exec_finished)
+                    if exec_finished in (Command.ROTATE_GRID, Command.PLACE_CUBES):
+                        self._status.steps_finished += 1
+                        self._status.steps_total = self._builder.build_steps
                     if exec_finished == Command.MOVE_LIFT and self._status.status in (Status.RUNNING, Status.PAUSED):
                         self._uart_write.put(CommandBuilder.other_command(Command.GET_STATE))
                 if cmd == Command.SEND_STATE:
@@ -132,6 +135,7 @@ class RebuilderApplication:
                     lift_state = LiftState(message.data.send_state.lift_state)
                     werni_state = WerniState(message.data.send_state.werni_state)
                     if lift_state == LiftState.LIFT_DOWN:
+                        self._status.steps_finished += 1
                         self._finish_run()
                     self._logger.info('State - energy: %.3fWh, lift: %s, werni: %s', energy, lift_state, werni_state)
             except ValueError as error:

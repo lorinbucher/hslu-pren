@@ -25,6 +25,7 @@ class Builder:
         self._rotated = 0
         self._in_progress = Event()
 
+        self._build_steps = 0
         self._config: list[CubeColor] = []
         self._pos: list[CubeColor] = []
         self._cube_states: list[CubeState] = []
@@ -34,11 +35,17 @@ class Builder:
     def reset(self) -> None:
         """Resets the state of the builder."""
         self._in_progress.clear()
+        self._build_steps = 0
         self._config = [CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED,
                         CubeColor.RED, CubeColor.YELLOW, CubeColor.NONE, CubeColor.RED]
         self._pos = [CubeColor.NONE, CubeColor.RED, CubeColor.YELLOW, CubeColor.BLUE]
         self._cube_states = [CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN,
                              CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN, CubeState.UNKNOWN]
+
+    @property
+    def build_steps(self) -> int:
+        """Returns the number of build steps totally required."""
+        return self._build_steps
 
     @property
     def cube_states(self) -> list[CubeState]:
@@ -93,6 +100,7 @@ class Builder:
         self.rotate_grid(4 - self._rotated, rotate_pos=True)
         self._logger.info('Move lift down command queued')
         self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_DOWN))
+        self._build_steps += 1
 
     def place_not_placed(self) -> None:
         """Place all cubes that are not placed yet."""
@@ -168,6 +176,7 @@ class Builder:
                 blue = blue * 2
             self._logger.info('Place cubes command queued - red: %s, yellow: %s, blue: %s', red, yellow, blue)
             self._uart_write.put(CommandBuilder.place_cubes(red, yellow, blue))
+            self._build_steps += 1
 
     def rotate_grid(self, times: int, rotate_pos: bool = True) -> None:
         """Rotates the grid the specified number of times."""
@@ -175,6 +184,7 @@ class Builder:
             angle = times * 90
             self._logger.info('Rotating grid command queued: %s°', angle)
             self._uart_write.put(CommandBuilder.rotate_grid(angle))
+            self._build_steps += 1
             self._rotated = self._rotated + times % 4
             if rotate_pos:
                 self.move_pos(times)

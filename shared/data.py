@@ -148,6 +148,8 @@ class StatusData:
     config: list[CubeColor] = field(default_factory=lambda: [CubeColor.UNKNOWN for _ in range(8)])
     energy: float = 0.0
     status: Status = Status.IDLE
+    steps_finished: int = 0
+    steps_total: int = 0
     time_config: int = 0
     time_end: int = 0
     time_start: int = 0
@@ -157,6 +159,8 @@ class StatusData:
         self.config = [CubeColor.UNKNOWN for _ in range(8)]
         self.energy = 0.0
         self.status = Status.IDLE
+        self.steps_finished = 0
+        self.steps_total = 0
         self.time_config = 0
         self.time_end = 0
         self.time_start = 0
