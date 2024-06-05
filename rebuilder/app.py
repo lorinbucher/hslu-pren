@@ -84,11 +84,10 @@ class RebuilderApplication:
                 if isinstance(action, Action):
                     self._logger.info('Received web action: %s', action)
                     if action == Action.INIT and self._status.status in (Status.IDLE, Status.COMPLETED):
-                        self._uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
                         self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_UP))
+                        self._uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
                         self._stream_processing.start()
                         self._status.reset()
-                        self._status.status = Status.READY
                     elif action in (Action.START, Action.STOP):
                         self._handle_start_stop(start=action == Action.START, stop=action == Action.STOP)
                     elif action == Action.RESTART:
@@ -124,11 +123,7 @@ class RebuilderApplication:
                 if cmd == Command.EXECUTION_FINISHED:
                     exec_finished = Command(message.data.exec_finished.cmd)
                     self._logger.info('Finished command: %s', exec_finished)
-                    if exec_finished in (Command.ROTATE_GRID, Command.PLACE_CUBES):
-                        self._status.steps_finished += 1
-                        self._status.steps_total = self._builder.build_steps
-                    if exec_finished == Command.MOVE_LIFT and self._status.status in (Status.RUNNING, Status.PAUSED):
-                        self._uart_write.put(CommandBuilder.other_command(Command.GET_STATE))
+                    self._handle_execution_finished(exec_finished)
                 if cmd == Command.SEND_STATE:
                     energy = self._convert_energy(message.data.send_state.energy)
                     self._status.energy = energy
@@ -182,19 +177,31 @@ class RebuilderApplication:
         if stop:
             if self._status.status == Status.RUNNING:
                 self._logger.info('Pausing build')
-                self._status.status = Status.PAUSED
                 self._uart_write.put(CommandBuilder.other_command(Command.PAUSE_BUILD))
             else:
                 self._logger.warning('Run not started yet')
         elif start:
             if self._status.status == Status.PAUSED:
                 self._logger.info('Resuming build')
-                self._status.status = Status.RUNNING
                 self._uart_write.put(CommandBuilder.other_command(Command.RESUME_BUILD))
             elif self._status.status == Status.READY:
                 self._start_run()
             else:
                 self._logger.warning('Run not initialized yet')
+
+    def _handle_execution_finished(self, exec_finished: Command) -> None:
+        """Handles execution finished UART message."""
+        if exec_finished == Command.PRIME_MAGAZINE:
+            self._status.status = Status.READY
+        elif exec_finished == Command.PAUSE_BUILD:
+            self._status.status = Status.PAUSED
+        elif exec_finished == Command.RESUME_BUILD:
+            self._status.status = Status.RUNNING
+        elif exec_finished in (Command.ROTATE_GRID, Command.PLACE_CUBES):
+            self._status.steps_finished += 1
+            self._status.steps_total = self._builder.build_steps
+        elif exec_finished == Command.MOVE_LIFT and self._status.status == Status.RUNNING:
+            self._uart_write.put(CommandBuilder.other_command(Command.GET_STATE))
 
     def _start_run(self) -> None:
         """Starts a new run if not already one in progress."""
@@ -229,7 +236,7 @@ class RebuilderApplication:
     def _buzzer(self) -> None:
         """Marks the end of the run with the buzzer for a few seconds."""
         self._uart_write.put(CommandBuilder.enable_buzzer(BuzzerState.ENABLE))
-        time.sleep(10)
+        time.sleep(5)
         self._uart_write.put(CommandBuilder.enable_buzzer(BuzzerState.DISABLE))
 
     def _convert_energy(self, energy: float) -> float:

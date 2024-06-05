@@ -61,9 +61,11 @@ class ElectronicsSimulator:
             elif command == Command.PAUSE_BUILD:
                 print('Pausing build')
                 self._pause_event.set()
+                self._write(self._exec_finished(command))
             elif command == Command.RESUME_BUILD:
                 print('Resuming build')
                 self._pause_event.clear()
+                self._write(self._exec_finished(command))
             else:
                 self._message_queue.put(message)
 
