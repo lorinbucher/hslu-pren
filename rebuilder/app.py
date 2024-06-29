@@ -236,7 +236,7 @@ class RebuilderApplication:
     def _buzzer(self) -> None:
         """Marks the end of the run with the buzzer for a few seconds."""
         self._uart_write.put(CommandBuilder.enable_buzzer(BuzzerState.ENABLE))
-        time.sleep(5)
+        time.sleep(1)
         self._uart_write.put(CommandBuilder.enable_buzzer(BuzzerState.DISABLE))
 
     def _convert_energy(self, energy: float) -> float:
