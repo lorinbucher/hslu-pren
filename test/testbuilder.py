@@ -244,6 +244,7 @@ class TestBuildAlgorithm(unittest.TestCase):
              CubeColor.NONE, CubeColor.NONE])
 
         builder.build()
+        builder.finish_build()
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
@@ -282,6 +283,7 @@ class TestBuildAlgorithm(unittest.TestCase):
              CubeColor.NONE, CubeColor.RED])
 
         builder.build()
+        builder.finish_build()
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
@@ -409,6 +411,7 @@ class TestBuildAlgorithm(unittest.TestCase):
              CubeColor.NONE, CubeColor.RED])
 
         builder.build(True)
+        builder.finish_build()
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
@@ -447,6 +450,7 @@ class TestBuildAlgorithm(unittest.TestCase):
              CubeColor.NONE, CubeColor.RED])
 
         builder.build(True)
+        builder.finish_build()
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
