@@ -159,13 +159,21 @@ class RebuilderApplication:
                 self._logger.warning('Received data has wrong type: %s', type(config))
                 return
 
-            self._status.config = config.config
+            self._status.config = config.config.copy()
+            if self._app_config.app_incremental_build:
+                self._builder.set_config(config.config.copy())
+                self._builder.build()
+
             if config.completed():
                 self._logger.info('Received complete configuration: %s', config.to_dict())
                 self._status.time_config = time.time_ns()
                 self._cube_api.submit(self._cube_api.post_config, config, datetime.now())
-                self._builder.set_config(config.config)
-                self._builder.build(build_doubles_first=True)
+
+                if not self._app_config.app_incremental_build:
+                    self._builder.set_config(config.config.copy())
+                    self._builder.build(build_doubles_first=True)
+                self._builder.finish_build()
+
                 self._stream_processing.halt()
                 self._stream_processing.stop_recognition()
 

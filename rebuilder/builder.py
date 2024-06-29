@@ -67,7 +67,7 @@ class Builder:
         for i in range(4):
             if config[i] == CubeColor.UNKNOWN:
                 config[i + 4] = CubeColor.UNKNOWN
-        self._config = config
+        self._config = config.copy()
 
     def build(self, build_doubles_first: bool = False) -> None:
         """Builds the cube configuration, optionally trying to build doubles."""
@@ -75,7 +75,6 @@ class Builder:
         if build_doubles_first:
             self.build_doubles()
         self.build_whats_possible()
-        self.finish_build()
 
     def build_doubles(self) -> None:
         """Tries to build doubles if possible."""
