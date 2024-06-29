@@ -1,6 +1,5 @@
 """Implements the 3D Re-Builder application."""
 import logging
-import multiprocessing
 import queue
 import subprocess
 import time
@@ -28,7 +27,7 @@ class RebuilderApplication:
         self._executor = ThreadPoolExecutor(max_workers=8)
         self._halt_event = Event()
 
-        self._recognition_queue: multiprocessing.Queue = multiprocessing.Queue()
+        self._recognition_queue: queue.Queue = queue.Queue()
         self._uart_read: queue.Queue = queue.Queue()
         self._uart_write: queue.Queue = queue.Queue()
         self._web_queue: queue.Queue = queue.Queue()

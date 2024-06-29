@@ -1,8 +1,9 @@
 """Implements the video stream processing module."""
 import concurrent.futures
 import logging
+import queue
 import time
-from multiprocessing import Event, Process, Queue
+from threading import Event, Thread
 from typing import Any
 
 import cv2
@@ -15,13 +16,13 @@ from .recognition import CubeRecognition
 class StreamProcessing:
     """Processes the incoming video stream."""
 
-    def __init__(self, app_config: AppConfiguration, builder_queue: Queue):
+    def __init__(self, app_config: AppConfiguration, builder_queue: queue.Queue):
         self._logger = logging.getLogger('video.stream_processing')
         self._app_config = app_config
         self._builder_queue = builder_queue
         self._halt_event = Event()
         self._recognition = Event()
-        self._process: Process | None = None
+        self._thread: Thread | None = None
         self._capture: cv2.VideoCapture | None = None
         self._cube_config = CubeConfiguration()
         self._recognition_result: dict[str, dict[str, int]] = {}
@@ -30,17 +31,16 @@ class StreamProcessing:
         """Starts the video stream processing."""
         self._logger.info('Starting video stream processing')
         self._halt_event.clear()
-        self._process = Process(target=self._run)
-        self._process.start()
+        self._thread = Thread(target=self._run)
+        self._thread.start()
         self._logger.info('Video stream processing started')
 
     def stop(self) -> None:
         """Stops the video stream processing."""
-        if self._process is not None:
+        if self._thread is not None:
             self._logger.info('Stopping video stream processing')
-            self._process.join()
-            self._process.close()
-            self._process = None
+            self._thread.join()
+            self._thread = None
             self._logger.info('Video stream processing stopped')
 
     def halt(self) -> None:
@@ -86,6 +86,7 @@ class StreamProcessing:
 
         if self._capture is not None:
             self._capture.release()
+            self._capture = None
         self._logger.info('Video stream process stopped')
 
     def _read_frame(self) -> Any:
