@@ -9,6 +9,8 @@ WorkingDirectory=/opt/pren
 ExecStart=/opt/pren/venv/bin/python3 /opt/pren/main.py
 RestartSec=5
 Restart=always
+TimeoutAbortSec=15
+TimeoutStopSec=15
 
 [Install]
 WantedBy=multi-user.target
