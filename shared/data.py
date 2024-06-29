@@ -149,7 +149,7 @@ class StatusData:
     energy: float = 0.0
     status: Status = Status.IDLE
     steps_finished: int = 0
-    steps_total: int = 0
+    steps_total: int = 10
     time_config: int = 0
     time_end: int = 0
     time_start: int = 0
@@ -160,7 +160,7 @@ class StatusData:
         self.energy = 0.0
         self.status = Status.IDLE
         self.steps_finished = 0
-        self.steps_total = 0
+        self.steps_total = 10
         self.time_config = 0
         self.time_end = 0
         self.time_start = 0

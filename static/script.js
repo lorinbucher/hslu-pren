@@ -144,8 +144,6 @@ async function sendPostRequest(url, data) {
 
 // App
 
-// TODO: handle config
-
 async function fetchStatus() {
     sendGetRequest(statusEndpoint)
         .then(data => {
@@ -165,7 +163,7 @@ async function fetchStatus() {
             configTimeText.textContent = formatter.format(startToConfig || 0) + "s";
             endTimeText.textContent = formatter.format(startToEnd || 0) + "s";
             energyText.textContent = formatter.format(energy || 0) + " Wh";
-            progressText.textContent = (Math.ceil((100 / steps_total) * steps_finished) || "0") + "%";
+            progressText.textContent = (Math.round((100 / steps_total) * steps_finished) || "0") + "%";
             progressBar.max = steps_total || 0;
             progressBar.value = steps_finished || 0;
         });

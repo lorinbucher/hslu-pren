@@ -8,7 +8,7 @@ from datetime import datetime
 from threading import Event
 
 from shared.data import AppConfiguration, CubeConfiguration, StatusData
-from shared.enumerations import Action, Status
+from shared.enumerations import Action, CubeColor, Status
 from uart.command import ButtonState, BuzzerState, Command, LiftState, MoveLift, WerniState
 from uart.commandbuilder import CommandBuilder
 from uart.communicator import UartCommunicator
@@ -129,7 +129,7 @@ class RebuilderApplication:
                     lift_state = LiftState(message.data.send_state.lift_state)
                     werni_state = WerniState(message.data.send_state.werni_state)
                     if lift_state == LiftState.LIFT_DOWN:
-                        self._status.steps_finished += 1
+                        self._status.steps_finished = self._status.steps_total
                         self._finish_run()
                     self._logger.info('State - energy: %.3fWh, lift: %s, werni: %s', energy, lift_state, werni_state)
             except ValueError as error:
@@ -160,6 +160,7 @@ class RebuilderApplication:
                 return
 
             self._status.config = config.config.copy()
+            self._status.steps_finished = sum(1 for cube in config.config.copy() if cube != CubeColor.UNKNOWN)
             if self._app_config.app_incremental_build:
                 self._builder.set_config(config.config.copy())
                 self._builder.build()
@@ -204,9 +205,6 @@ class RebuilderApplication:
             self._status.status = Status.PAUSED
         elif exec_finished == Command.RESUME_BUILD:
             self._status.status = Status.RUNNING
-        elif exec_finished in (Command.ROTATE_GRID, Command.PLACE_CUBES):
-            self._status.steps_finished += 1
-            self._status.steps_total = self._builder.build_steps
         elif exec_finished == Command.MOVE_LIFT and self._status.status == Status.RUNNING:
             self._uart_write.put(CommandBuilder.other_command(Command.GET_STATE))
 
