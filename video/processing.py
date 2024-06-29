@@ -99,7 +99,10 @@ class StreamProcessing:
                 self._logger.info('Opening video stream connection')
                 self._capture = cv2.VideoCapture()
                 self._capture.setExceptionMode(True)
-                self._capture.open(url)
+                self._capture.open(url, apiPreference=cv2.CAP_FFMPEG, params=[
+                    cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 5000,
+                    cv2.CAP_PROP_READ_TIMEOUT_MSEC, 500
+                ])
 
             if self._capture.grab():
                 res, frame = self._capture.retrieve()
