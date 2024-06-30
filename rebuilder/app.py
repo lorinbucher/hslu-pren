@@ -146,12 +146,19 @@ class RebuilderApplication:
             try:
                 config = self._recognition_queue.get(timeout=1.0)
             except queue.Empty:
-                if self._status.status in (Status.RUNNING, Status.PAUSED) and not self._builder.is_running:
+                if self._status.status in (Status.RUNNING, Status.PAUSED):
                     current_runtime = (time.time_ns() - self._status.time_start) / 1_000_000_000
                     if current_runtime > self._app_config.app_recognition_timeout:
-                        self._logger.warning('Recognition timeout passed, building default config')
                         config = CubeConfiguration()
-                        config.set_default()
+                        if not self._builder.is_running:
+                            self._logger.warning('Recognition timeout passed, building default config')
+                            config.set_default()
+                        else:
+                            self._logger.warning('Recognition timeout passed, finishing current config')
+                            config.config = self._status.config.copy()
+                            for pos in range(1, 9):
+                                if config.get_color(pos) == CubeColor.UNKNOWN:
+                                    config.set_color(CubeColor.NONE, pos)
                         self._recognition_queue.put(config)
                 continue
 
