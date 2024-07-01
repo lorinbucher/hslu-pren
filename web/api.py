@@ -7,7 +7,7 @@ from typing import Any, Callable
 
 import requests
 
-from shared.data import AppConfiguration, CubeConfiguration
+from shared.data import AppConfiguration
 
 
 class CubeApi:
@@ -48,12 +48,12 @@ class CubeApi:
         response = self._post_request(f'https://{self._address}/cubes/team{self._team_nr}/start')
         return 200 <= response.status_code <= 299 if response else False
 
-    def post_config(self, cube_config: CubeConfiguration, timestamp: datetime) -> bool:
+    def post_config(self, cube_config: dict[str, str], timestamp: datetime) -> bool:
         """Sends a POST request with the recognized cube configuration."""
         self._logger.info('Sending config request')
         data = {
             'time': timestamp.isoformat(),
-            'config': cube_config.to_dict()
+            'config': cube_config
         }
         response = self._post_request(f'https://{self._address}/cubes/team{self._team_nr}/config', data=data)
         return 200 <= response.status_code <= 299 if response else False

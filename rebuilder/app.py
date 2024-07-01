@@ -176,7 +176,7 @@ class RebuilderApplication:
             if config.completed():
                 self._logger.info('Received complete configuration: %s', config.to_dict())
                 self._status.time_config = time.time_ns()
-                self._cube_api.submit(self._cube_api.post_config, config, datetime.now())
+                self._cube_api.submit(self._cube_api.post_config, config.to_dict(), datetime.now())
 
                 if not self._app_config.app_incremental_build:
                     self._builder.set_config(config.config.copy())
@@ -241,7 +241,6 @@ class RebuilderApplication:
         self._status.time_end = time.time_ns()
         self._stream_processing.stop()
         self._cube_api.submit(self._cube_api.post_end)
-        self._cube_api.submit(self._cube_api.get_config)
         self._executor.submit(self._buzzer)
         self._logger.info('Run completed - config: %.3fs, total: %.3fs',
                           self._status.duration_config, self._status.duration_total)
