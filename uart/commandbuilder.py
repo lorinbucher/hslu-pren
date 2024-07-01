@@ -16,8 +16,6 @@ class CommandBuilder:
     def rotate_grid(cls, degrees: int) -> Message:
         """Builds the command to rotate the grid by the specified degrees."""
         deg = degrees % 360
-        if deg > 180:
-            deg -= 360
 
         rotate = RotateGrid()
         rotate.degrees = deg

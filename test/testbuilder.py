@@ -50,7 +50,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         builder.rotate_grid(-5)
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
-        self.assertEqual(message.data.rotate_grid.degrees, -90)
+        self.assertEqual(message.data.rotate_grid.degrees, 270)
 
         builder.rotate_grid(-4)
         self.assertTrue(uart_write.empty())
@@ -68,7 +68,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         builder.rotate_grid(-1)
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
-        self.assertEqual(message.data.rotate_grid.degrees, -90)
+        self.assertEqual(message.data.rotate_grid.degrees, 270)
 
         builder.rotate_grid(0)
         self.assertTrue(uart_write.empty())
@@ -86,7 +86,7 @@ class TestBuildAlgorithm(unittest.TestCase):
         builder.rotate_grid(3)
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
-        self.assertEqual(message.data.rotate_grid.degrees, -90)
+        self.assertEqual(message.data.rotate_grid.degrees, 270)
 
         builder.rotate_grid(4)
         self.assertTrue(uart_write.empty())
@@ -313,7 +313,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
-        self.assertEqual(message.data.rotate_grid.degrees, -90)
+        self.assertEqual(message.data.rotate_grid.degrees, 270)
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
@@ -323,7 +323,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
-        self.assertEqual(message.data.rotate_grid.degrees, -90)
+        self.assertEqual(message.data.rotate_grid.degrees, 270)
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.MOVE_LIFT)
@@ -372,7 +372,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
-        self.assertEqual(message.data.rotate_grid.degrees, -90)
+        self.assertEqual(message.data.rotate_grid.degrees, 270)
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
@@ -396,7 +396,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
-        self.assertEqual(message.data.rotate_grid.degrees, -90)
+        self.assertEqual(message.data.rotate_grid.degrees, 270)
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.MOVE_LIFT)
@@ -474,7 +474,7 @@ class TestBuildAlgorithm(unittest.TestCase):
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.ROTATE_GRID)
-        self.assertEqual(message.data.rotate_grid.degrees, -90)
+        self.assertEqual(message.data.rotate_grid.degrees, 270)
 
         message = uart_write.get(timeout=2.0)
         self.assertEqual(Command(message.cmd), Command.PLACE_CUBES)
