@@ -65,6 +65,8 @@ class CubeRecognition:
         contours_blue = CubeRecognition._contour_with_min_size(mask_blue)
         contours_red = CubeRecognition._contour_with_min_size(mask_red)
         contours_yellow = CubeRecognition._contour_with_min_size(mask_yellow)
+        if not contours_cube or not contours_ref:
+            return config.config
 
         # Filter contours that are not near the detected cube
         contour_cube = max(contours_cube, key=lambda c: cv2.contourArea(c))  # pylint: disable=unnecessary-lambda
@@ -116,23 +118,29 @@ class CubeRecognition:
     @staticmethod
     def _reference_offset(refs: list[Any], width: int, height: int) -> int:
         """Returns the reference offset, negative if not entirely clear."""
+        count = 0
+        offset = -1
         if (CubeRecognition._point_in_any_contour(refs, (25, height - 25)) and
                 CubeRecognition._point_in_any_contour(refs, (25, height - 100)) and
                 CubeRecognition._point_in_any_contour(refs, (200, height - 25))):
-            return 0
+            count += 1
+            offset = 0
         if (CubeRecognition._point_in_any_contour(refs, (25, height - 175)) and
                 CubeRecognition._point_in_any_contour(refs, (75, 150)) and
                 CubeRecognition._point_in_any_contour(refs, (125, 125))):
-            return 1
+            count += 1
+            offset = 1
         if (CubeRecognition._point_in_any_contour(refs, (width - 25, height - 175)) and
                 CubeRecognition._point_in_any_contour(refs, (width - 75, 150)) and
                 CubeRecognition._point_in_any_contour(refs, (width - 125, 125))):
-            return 2
+            count += 1
+            offset = 2
         if (CubeRecognition._point_in_any_contour(refs, (width - 25, height - 25)) and
                 CubeRecognition._point_in_any_contour(refs, (width - 25, height - 100)) and
                 CubeRecognition._point_in_any_contour(refs, (width - 200, height - 25))):
-            return 3
-        return -1
+            count += 1
+            offset = 3
+        return offset if count == 1 else -1
 
     @staticmethod
     def _find_color_for_point(cnt_map, point_color, point):
