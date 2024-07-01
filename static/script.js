@@ -171,23 +171,28 @@ async function fetchStatus() {
 
 function updateButtonState(status) {
     switch (status) {
+        case "init":
+            initButton.disabled = true;
+            startButton.disabled = true;
+            pauseButton.disabled = true;
+            break;
         case "ready":
             initButton.disabled = true;
-            startButton.disabled = false
+            startButton.disabled = false;
             pauseButton.disabled = true;
             break;
         case "running":
             initButton.disabled = true;
             startButton.disabled = true;
-            pauseButton.disabled = false
+            pauseButton.disabled = false;
             break;
         case "paused":
             initButton.disabled = true;
-            startButton.disabled = false
+            startButton.disabled = false;
             pauseButton.disabled = true;
             break;
         default:
-            initButton.disabled = false
+            initButton.disabled = false;
             startButton.disabled = true;
             pauseButton.disabled = true;
             break;
