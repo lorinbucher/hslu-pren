@@ -28,6 +28,7 @@ class CubeColor(StrEnum):
 class Status(StrEnum):
     """The status of the 3D Re-Builder application."""
     IDLE = 'idle'
+    INIT = 'init'
     READY = 'ready'
     RUNNING = 'running'
     PAUSED = 'paused'

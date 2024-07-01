@@ -83,10 +83,12 @@ class RebuilderApplication:
                 if isinstance(action, Action):
                     self._logger.info('Received web action: %s', action)
                     if action == Action.INIT and self._status.status in (Status.IDLE, Status.COMPLETED):
+                        self._status.reset()
+                        self._status.status = Status.INIT
+                        self._uart_write.put(CommandBuilder.other_command(Command.RESET_WERNI))
                         self._uart_write.put(CommandBuilder.move_lift(MoveLift.MOVE_UP))
                         self._uart_write.put(CommandBuilder.other_command(Command.PRIME_MAGAZINE))
                         self._stream_processing.start()
-                        self._status.reset()
                     elif action in (Action.START, Action.STOP):
                         self._handle_start_stop(start=action == Action.START, stop=action == Action.STOP)
                     elif action == Action.RESTART:
