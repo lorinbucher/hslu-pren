@@ -8,8 +8,8 @@ from shared.data import CubeConfiguration
 from shared.enumerations import CubeColor
 
 # Frame region of interest
-FRAME_CROP_X = 400
-FRAME_CROP_Y = 0
+FRAME_CROP_X = 375
+FRAME_CROP_Y = 25
 FRAME_CROP_W = 500
 FRAME_CROP_H = 400
 
