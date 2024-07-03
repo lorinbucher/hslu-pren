@@ -62,26 +62,28 @@ class StreamProcessing:
         """Runs the video stream process."""
         self._logger.info('Video stream process started')
         futures: list[concurrent.futures.Future] = []
+        frame_queue: queue.Queue = queue.Queue(maxsize=250)
         with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
             while not self._halt_event.is_set():
                 frame = self._read_frame()
-                if not self._recognition.is_set():
-                    self._cube_config.reset()
-                    self._recognition_result = {}
-                    continue
-
-                if frame is not None:
-                    if len(futures) <= 25:
-                        future = executor.submit(CubeRecognition.process_frame, frame)
-                        futures.append(future)
-                    else:
-                        self._logger.warning('Video stream processing overloaded, skipping frame')
-
                 try:
-                    for future in concurrent.futures.as_completed(futures, timeout=0.02):
-                        self._process_result(future.result())
-                        futures.remove(future)
-                except concurrent.futures.TimeoutError:
+                    if frame is not None:
+                        if frame_queue.full():
+                            frame_queue.get_nowait()
+                        frame_queue.put(frame)
+
+                        if not self._recognition.is_set():
+                            self._cube_config.reset()
+                            self._recognition_result = {}
+                        else:
+                            while not frame_queue.empty() and len(futures) <= 50:
+                                future = executor.submit(CubeRecognition.process_frame, frame_queue.get_nowait())
+                                futures.append(future)
+
+                        for future in concurrent.futures.as_completed(futures, timeout=0.02):
+                            self._process_result(future.result())
+                            futures.remove(future)
+                except (concurrent.futures.TimeoutError, queue.Empty, queue.Full):
                     pass
 
         if self._capture is not None:

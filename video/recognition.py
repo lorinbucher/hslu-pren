@@ -17,7 +17,7 @@ FRAME_CROP_H = 400
 # TODO (lorin): tweak ranges more, to optimize detection and remove noise
 LOWER_REF = np.array([0, 0, 175])
 UPPER_REF = np.array([180, 60, 255])
-LOWER_BLUE = np.array([100, 75, 50])
+LOWER_BLUE = np.array([100, 100, 75])
 UPPER_BLUE = np.array([130, 255, 255])
 LOWER_RED_LOW = np.array([0, 75, 50])
 UPPER_RED_LOW = np.array([10, 255, 255])
@@ -80,8 +80,8 @@ class CubeRecognition:
         if offset >= 0 and len(contour_map) > 0:
             config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (200, 300)), 1, offset)
             config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (300, 300)), 2, offset)
-            config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (300, 100)), 7, offset)
-            config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (200, 100)), 8, offset)
+            config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (300, 80)), 7, offset)
+            config.set_color(CubeRecognition._find_color_for_point(contour_map, None, (200, 80)), 8, offset)
         return config.config
 
     @staticmethod
