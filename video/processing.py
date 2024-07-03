@@ -100,8 +100,8 @@ class StreamProcessing:
                 self._capture = cv2.VideoCapture()
                 self._capture.setExceptionMode(True)
                 self._capture.open(url, apiPreference=cv2.CAP_FFMPEG, params=[
-                    cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 5000,
-                    cv2.CAP_PROP_READ_TIMEOUT_MSEC, 1000
+                    cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 10000,
+                    cv2.CAP_PROP_READ_TIMEOUT_MSEC, 2000
                 ])
 
             if self._capture.grab():
